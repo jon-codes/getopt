@@ -179,6 +179,184 @@ func TestGetOpt_Opts(t *testing.T) {
 		assertSequence(t, g, p, wants)
 		assertArgs(t, g, []string{"my_program", "-a", "my_arg", "-b"}, 2)
 	})
+
+	t.Run("a single option with missing required argument", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-a"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a'}, ErrMissingOptArg},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-a"}, 2)
+	})
+
+	t.Run("a single option with missing optional argument", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-a"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: OptionalArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a'}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-a"}, 2)
+	})
+}
+
+func TestGetOpt_LongOpts(t *testing.T) {
+	t.Run("a single valid option", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo"}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo"}, 2)
+	})
+
+	t.Run("a single valid option when the argument is provided inline", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo=bar"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo=bar"}, 2)
+	})
+
+	t.Run("a single valid option when the argument is provided in the next arg", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo", "bar"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo", "bar"}, 3)
+	})
+
+	t.Run("a single valid option when the next arg looks like an option", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo", "--bar"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo", OptArg: "--bar"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo", "--bar"}, 3)
+	})
+
+	t.Run("a single valid option when the argument contains multi-byte chars", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo=文"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo", OptArg: "文"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo=文"}, 2)
+	})
+
+	t.Run("a single option containing invalid chars", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo文"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo文"}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo文"}, ErrIllegalOpt},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo文"}, 2)
+	})
+
+	t.Run("a single undefined option", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "bar"}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo"}, ErrIllegalOpt},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo"}, 2)
+	})
+
+	t.Run("a single option with a disallowed inline option argument", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo=bar"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo"}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo=bar"}, ErrIllegalOpt},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo=bar"}, 2)
+	})
+
+	t.Run("a single option with missing required argument", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo"}, ErrMissingOptArg},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo"}, 2)
+	})
+
+	t.Run("a single option with missing optional argument", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "--foo"})
+		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: OptionalArgument}}}
+
+		wants := []resultAssertion{
+			{GetOptResult{Name: "foo"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
+
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "--foo"}, 2)
+	})
+}
+
+func TestGetOpt_MixedOpts(t *testing.T) {
+	g := NewGetOptState([]string{"my_program", "-abc", "d", "--foo=bar", "-ef", "--", "--fizz", "buzz"})
+	p := GetOptParams{
+		Opts: []Opt{
+			{Char: 'a'},
+			{Char: 'b'},
+			{Char: 'c', HasArg: RequiredArgument},
+			{Char: 'e', HasArg: OptionalArgument},
+		}, LongOpts: []LongOpt{
+			{Name: "foo", HasArg: RequiredArgument},
+		}}
+
+	wants := []resultAssertion{
+		{GetOptResult{Char: 'a'}, nil},
+		{GetOptResult{Char: 'b'}, nil},
+		{GetOptResult{Char: 'c', OptArg: "d"}, nil},
+		{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
+		{GetOptResult{Char: 'e', OptArg: "f"}, nil},
+		{GetOptResult{}, ErrDone},
+	}
+
+	assertSequence(t, g, p, wants)
+	assertArgs(t, g, []string{"my_program", "-abc", "d", "--foo=bar", "-ef", "--", "--fizz", "buzz"}, 6)
 }
 
 type resultAssertion struct {
