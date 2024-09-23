@@ -27,6 +27,48 @@ const (
 	OptionalArgument
 )
 
+type GetOptFunc int
+
+const (
+	FuncGetOpt GetOptFunc = iota
+	FuncGetOptLong
+	FuncGetOptLongOnly
+)
+
+func (f GetOptFunc) String() string {
+	switch f {
+	case FuncGetOpt:
+		return "getopt"
+	case FuncGetOptLong:
+		return "getopt_long"
+	case FuncGetOptLongOnly:
+		return "getopt_long_only"
+	default:
+		return "unknown"
+	}
+}
+
+type Mode int
+
+const (
+	ModeGNU Mode = iota
+	ModePosix
+	ModeInOrder
+)
+
+func (m Mode) String() string {
+	switch m {
+	case ModeGNU:
+		return "gnu"
+	case ModePosix:
+		return "posix"
+	case ModeInOrder:
+		return "inorder"
+	default:
+		return "unknown"
+	}
+}
+
 type Opt struct {
 	Char   rune
 	HasArg HasArgType
@@ -38,8 +80,10 @@ type LongOpt struct {
 }
 
 type GetOptParams struct {
-	Opts     []Opt
-	LongOpts []LongOpt
+	Opts       []Opt
+	LongOpts   []LongOpt
+	GetOptFunc GetOptFunc
+	Mode       Mode
 }
 
 type GetOptResult struct {
