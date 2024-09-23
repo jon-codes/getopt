@@ -1,8 +1,15 @@
 package opt
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"os"
 	"slices"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -28,8 +35,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -41,8 +48,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a', OptArg: "foo"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -54,8 +61,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a', OptArg: "foo"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -67,8 +74,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a', OptArg: "-b"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a', OptArg: "-b"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -80,8 +87,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a', OptArg: "文"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a', OptArg: "文"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -93,10 +100,10 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{Char: 'b'}, nil},
-			{GetOptResult{Char: 'c'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{Char: 'b'}, err: nil},
+			{res: GetOptResult{Char: 'c'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -108,10 +115,10 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{Char: 'b'}, nil},
-			{GetOptResult{Char: 'c'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{Char: 'b'}, err: nil},
+			{res: GetOptResult{Char: 'c'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -123,7 +130,7 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'b'}, ErrIllegalOpt},
+			{res: GetOptResult{Char: 'b'}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -135,7 +142,7 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: '-'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: '-'}, ErrIllegalOpt},
+			{res: GetOptResult{Char: '-'}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -147,7 +154,7 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: '文'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: '文'}, ErrIllegalOpt},
+			{res: GetOptResult{Char: '文'}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -159,8 +166,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -172,8 +179,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -185,7 +192,7 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, ErrMissingOptArg},
+			{res: GetOptResult{Char: 'a'}, err: ErrMissingOptArg},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -197,8 +204,8 @@ func TestGetOpt_Opts(t *testing.T) {
 		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: OptionalArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Char: 'a'}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Char: 'a'}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -212,8 +219,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo"}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -225,8 +232,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo", OptArg: "bar"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -238,8 +245,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo", OptArg: "bar"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -251,8 +258,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo", OptArg: "--bar"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo", OptArg: "--bar"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -264,8 +271,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo", OptArg: "文"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo", OptArg: "文"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -277,7 +284,7 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo文"}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo文"}, ErrIllegalOpt},
+			{res: GetOptResult{Name: "foo文"}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -289,7 +296,7 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "bar"}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo"}, ErrIllegalOpt},
+			{res: GetOptResult{Name: "foo"}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -301,7 +308,7 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo"}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo=bar"}, ErrIllegalOpt},
+			{res: GetOptResult{Name: "foo=bar"}, err: ErrIllegalOpt},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -313,7 +320,7 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: RequiredArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo"}, ErrMissingOptArg},
+			{res: GetOptResult{Name: "foo"}, err: ErrMissingOptArg},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -325,8 +332,8 @@ func TestGetOpt_LongOpts(t *testing.T) {
 		p := GetOptParams{LongOpts: []LongOpt{{Name: "foo", HasArg: OptionalArgument}}}
 
 		wants := []resultAssertion{
-			{GetOptResult{Name: "foo"}, nil},
-			{GetOptResult{}, ErrDone},
+			{res: GetOptResult{Name: "foo"}, err: nil},
+			{res: GetOptResult{}, err: ErrDone},
 		}
 
 		assertSequence(t, g, p, wants)
@@ -347,21 +354,74 @@ func TestGetOpt_MixedOpts(t *testing.T) {
 		}}
 
 	wants := []resultAssertion{
-		{GetOptResult{Char: 'a'}, nil},
-		{GetOptResult{Char: 'b'}, nil},
-		{GetOptResult{Char: 'c', OptArg: "d"}, nil},
-		{GetOptResult{Name: "foo", OptArg: "bar"}, nil},
-		{GetOptResult{Char: 'e', OptArg: "f"}, nil},
-		{GetOptResult{}, ErrDone},
+		{res: GetOptResult{Char: 'a'}, err: nil},
+		{res: GetOptResult{Char: 'b'}, err: nil},
+		{res: GetOptResult{Char: 'c', OptArg: "d"}, err: nil},
+		{res: GetOptResult{Name: "foo", OptArg: "bar"}, err: nil},
+		{res: GetOptResult{Char: 'e', OptArg: "f"}, err: nil},
+		{res: GetOptResult{}, err: ErrDone},
 	}
 
 	assertSequence(t, g, p, wants)
 	assertArgs(t, g, []string{"my_program", "-abc", "d", "--foo=bar", "-ef", "--", "--fizz", "buzz"}, 6)
 }
 
+func TestGetOpt_Fixtures(t *testing.T) {
+	f, err := os.Open("testdata/fixtures.csv")
+	if err != nil {
+		t.Fatalf("unable to open file: %v", err)
+	}
+	defer f.Close()
+
+	reader := csv.NewReader(f)
+
+	headers, err := reader.Read()
+	if err != nil {
+		t.Fatalf("error reading file headers: %v", err)
+	}
+	colMap, err := readFixtureHeaders(headers)
+	if err != nil {
+		t.Fatalf("error reading file headers: %v", err)
+	}
+
+	var g *GetOptState
+
+	for {
+		row, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("error reading record: %v", err)
+		}
+		f, err := readFixtureRow(row, colMap)
+		if err != nil {
+			t.Fatalf("error parsing fixture: %v", err)
+		}
+
+		if f.step == 0 {
+			g = NewGetOptState(f.args)
+		}
+
+		testName := fmt.Sprintf("%s, %s, %s, iter %d", f.label, f.function.String(), f.mode.String(), f.step)
+		t.Run(testName, func(t *testing.T) {
+			got, err := f.got(g)
+			want := f.want()
+
+			if f.err == nil {
+				assertNoError(t, err)
+			} else {
+				assertError(t, err, f.err)
+			}
+			assertResult(t, got, want)
+			assertState(t, g, GetOptState{Args: f.mutargs, OptIndex: f.optindex})
+		})
+	}
+}
+
 type resultAssertion struct {
-	result GetOptResult
-	err    error
+	res GetOptResult
+	err error
 }
 
 func assertSequence(t testing.TB, g *GetOptState, p GetOptParams, wants []resultAssertion) {
@@ -374,7 +434,7 @@ func assertSequence(t testing.TB, g *GetOptState, p GetOptParams, wants []result
 		} else {
 			assertError(t, err, want.err)
 		}
-		assertResult(t, got, want.result)
+		assertResult(t, got, want.res)
 	}
 }
 
@@ -412,9 +472,6 @@ func assertState(t testing.TB, got *GetOptState, want GetOptState) {
 	if got.OptIndex != want.OptIndex {
 		t.Errorf("got OptIndex %d, but wanted %d", got.OptIndex, want.OptIndex)
 	}
-	if got.ArgIndex != want.ArgIndex {
-		t.Errorf("got ArgIndex %d, but wanted %d", got.ArgIndex, want.ArgIndex)
-	}
 }
 
 func assertError(t testing.TB, got, want error) {
@@ -435,4 +492,147 @@ func assertNoError(t testing.TB, err error) {
 	if err != nil {
 		t.Errorf("wanted no error, but got %q", err)
 	}
+}
+
+type fixture struct {
+	label    string
+	step     int
+	args     []string
+	opts     []Opt
+	longOpts []LongOpt
+	function GetOptFunc
+	mode     GetOptMode
+	char     rune
+	name     string
+	err      error
+	optindex int
+	optarg   string
+	mutargs  []string
+}
+
+func (f fixture) got(g *GetOptState) (GetOptResult, error) {
+	p := GetOptParams{Opts: f.opts, LongOpts: f.longOpts, GetOptFunc: f.function, Mode: f.mode}
+	return g.GetOpt(p)
+}
+
+func (f fixture) want() GetOptResult {
+	return GetOptResult{Char: f.char, Name: f.name, OptArg: f.optarg}
+}
+
+var colNames = []string{
+	"label", "step", "args", "optstring", "longopts", "char", "name", "err",
+	"optindex", "optarg", "mutargs",
+}
+
+func readFixtureHeaders(row []string) (map[string]int, error) {
+	m := map[string]int{}
+	for _, name := range colNames {
+		i := slices.Index(row, name)
+		if i < 0 {
+			return m, fmt.Errorf("could not find column name %s in row %v", name, row)
+		}
+		m[name] = i
+	}
+	return m, nil
+}
+
+func readFixtureRow(row []string, cols map[string]int) (fixture, error) {
+	labelStr := row[cols["label"]]
+	stepStr := row[cols["step"]]
+	argsStr := row[cols["args"]]
+	optstringStr := row[cols["optstring"]]
+	longoptsStr := row[cols["longopts"]]
+	charStr := row[cols["char"]]
+	nameStr := row[cols["name"]]
+	errStr := row[cols["err"]]
+	optindexStr := row[cols["optindex"]]
+	optargStr := row[cols["optarg"]]
+	mutargsStr := row[cols["mutargs"]]
+
+	step, err := strconv.Atoi(stepStr)
+	if err != nil {
+		return fixture{}, fmt.Errorf("error parsing fixture step: %v", err)
+	}
+
+	var args []string
+	err = json.Unmarshal([]byte(argsStr), &args)
+	if err != nil {
+		return fixture{}, fmt.Errorf("error parsing fixture JSON args: %v", err)
+	}
+
+	var opts []Opt
+
+	for i := 0; i < len(optstringStr); i++ {
+		char := rune(optstringStr[i])
+		hasArg := NoArgument
+
+		if i+1 < len(optstringStr) && optstringStr[i+1] == ':' {
+			hasArg = RequiredArgument
+			i++
+			if i+1 < len(optstringStr) && optstringStr[i+1] == ':' {
+				hasArg = OptionalArgument
+				i++
+			}
+		}
+		opts = append(opts, Opt{Char: char, HasArg: hasArg})
+	}
+
+	var longOpts []LongOpt
+	items := strings.Split(longoptsStr, ",")
+
+	for _, item := range items {
+		hasArg := NoArgument
+		name, found := strings.CutSuffix(item, "::")
+		if found {
+			hasArg = OptionalArgument
+		} else {
+			name, found = strings.CutSuffix(item, ":")
+			if found {
+				hasArg = RequiredArgument
+			}
+		}
+
+		longOpts = append(longOpts, LongOpt{Name: name, HasArg: hasArg})
+	}
+
+	var mutargs []string
+	err = json.Unmarshal([]byte(mutargsStr), &mutargs)
+	if err != nil {
+		return fixture{}, fmt.Errorf("error parsing fixture JSON mutable args: %v", err)
+	}
+
+	char := '\x00'
+	if charStr != "" {
+		char = rune(charStr[0])
+	}
+
+	var errVal error
+	if errStr == "?" {
+		errVal = ErrIllegalOpt
+	}
+	if errStr == ":" {
+		errVal = ErrMissingOptArg
+	}
+	if errStr == "-1" {
+		errVal = ErrDone
+	}
+
+	optindex, err := strconv.Atoi(optindexStr)
+	if err != nil {
+		return fixture{}, fmt.Errorf("error parsing fixture optindex: %v", err)
+	}
+
+	return fixture{
+		label:    labelStr,
+		step:     step,
+		args:     args,
+		opts:     opts,
+		longOpts: longOpts,
+		char:     char,
+		name:     nameStr,
+		err:      errVal,
+		optindex: optindex,
+		optarg:   optargStr,
+		mutargs:  mutargs,
+	}, nil
 }

@@ -1,4 +1,4 @@
-package testutils
+package testgen
 
 import (
 	"encoding/csv"
@@ -23,13 +23,13 @@ type fixtureParams struct {
 	caseRecord
 	step     int
 	function opt.GetOptFunc
-	mode     opt.Mode
+	mode     opt.GetOptMode
 }
 
 var inColNames = []string{"label", "args", "optstring", "longopts"}
 var outColNames = []string{"label", "function", "mode", "step", "args", "optstring", "longopts", "char", "name", "err", "optindex", "optarg", "mutargs"}
 
-var modes = []opt.Mode{opt.ModeGNU, opt.ModePosix, opt.ModeInOrder}
+var modes = []opt.GetOptMode{opt.ModeGNU, opt.ModePosix, opt.ModeInOrder}
 var functions = []opt.GetOptFunc{opt.FuncGetOpt, opt.FuncGetOptLong, opt.FuncGetOptLongOnly}
 
 func parseCaseRecord(row []string, cols map[string]int) (caseRecord, error) {

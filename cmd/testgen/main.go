@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jon-codes/getopt/testutils"
+	"github.com/jon-codes/getopt/testgen"
 )
 
 const (
@@ -27,5 +27,5 @@ func main() {
 	}
 	defer outfile.Close()
 
-	testutils.ProcessCases(infile, outfile)
+	testgen.ProcessCases(infile, outfile)
 }
