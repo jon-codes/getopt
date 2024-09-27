@@ -256,11 +256,23 @@ func TestGetOpt(t *testing.T) {
 	})
 
 	t.Run("it treats arguments after '--' as parameters", func(t *testing.T) {
+		s := NewState(argsStr(`prgm -a -- -b`))
+		p := Params{Opts: OptStr(`ab`), Function: function}
+
+		wants := []assertion{
+			{char: 'a', args: argsStr(`prgm -a -- -b`), optIndex: 2},
+			{err: ErrDone, args: argsStr(`prgm -a -- -b`), optIndex: 3},
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+
+	t.Run("it does not treat '--' as a potential option arguments", func(t *testing.T) {
 		s := NewState(argsStr(`prgm -a -- p1`))
 		p := Params{Opts: OptStr(`a::`), Function: function}
 
 		wants := []assertion{
-			{char: 'a', args: argsStr(`prgm -a -- p1`), optIndex: 3},
+			{char: 'a', args: argsStr(`prgm -a -- p1`), optIndex: 2},
 			{err: ErrDone, args: argsStr(`prgm -a -- p1`), optIndex: 3},
 		}
 

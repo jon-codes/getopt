@@ -1,40 +1,75 @@
-.DEFAULT_GOAL = check
-.PHONY: FORCE
+.DEFAULT_GOAL = all
 
-CC = /usr/local/musl/bin/musl-gcc
+GOCC ?= /usr/local/musl/bin/musl-gcc
 GOFLAGS = -ldflags '-linkmode external -extldflags "-static"'
-OUTDIR = bin
-TESTGEN_BINARY = $(OUTDIR)/testgen
+BINDIR = bin
+TMPDIR = tmp
+TESTGEN_SRC = cmd/testgen/main.go
+TESTGEN_BIN = $(BINDIR)/testgen
+GOPKG = github.com/jon-codes/getopt
 
-build-testgen: $(TESTGEN_BINARY)
-.PHONY: build-testgen
+## all: run development tasks (default target)
+.PHONY: all
+all: deps fmt vet test
 
-clean:
-	rm -f $(TESTGEN_BINARY)
-.PHONY: clean
+.PHONY: check
+check: deps-check fmt-check vet test
 
+## deps: clean deps
+.PHONY: deps
+deps:
+	go mod tidy -v
+
+.PHONY: deps-check
+deps-check:
+	go mod tidy -diff
+	go mod verify
+
+## fmt: go fmt
+.PHONY: fmt
 fmt:
 	go fmt ./...
-.PHONY: fmt
 
+.PHONY: fmt-check
+fmt-check:
+	test -z "$(shell gofmt -l .)"
+
+## vet: go vet
+.PHONY: vet
 vet:
 	go vet ./...
-.PHONY: vet
 
-test:
-	go test -v -p=4 ./...
+## test: go test
 .PHONY: test
+test:
+	go test -v ./...
 
-check: fmt vet test
-.PHONY: check
+## cover: go test coverage
+.PHONY: cover
+cover: temp
+	go test -v -coverprofile $(TMPDIR)/cover.out $(GOPKG)
+	go tool cover -html=$(TMPDIR)/cover.out
 
-$(TESTGEN_BINARY): FORCE
-	@mkdir -p $(OUTDIR)
-	CC=$(CC) go build $(GOFLAGS) -o $@ ./cmd/testgen/main.go
+## build-testgen: build test generator
+.PHONY: build-testgen
+build-testgen:
+	CC=$(GOCC) go build $(GOFLAGS) -o $(TESTGEN_BIN) $(TESTGEN_SRC)
 
-deps: FORCE
-	go mod verify
-	go mod tidy
+## testgen: generate tests
+.PHONY: testgen
+testgen:
+	$(TESTGEN_BIN)
 
-all: clean deps
-.PHONY: all
+## clean: clean output
+.PHONY: clean
+clean:
+	rm -r $(BINDIR) $(TMPDIR)
+
+temp:
+	mkdir -p tmp
+
+## help: display this help
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /'

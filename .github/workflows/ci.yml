@@ -23,16 +23,4 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-      - run: go version
-      - run: go mod verify
-      - name: go mod tidy
-        run: |
-          go mod tidy
-          git diff --exit-code
-      - run: go vet ./...
-      - name: go fmt
-        run: |
-          go fmt ./...
-          git diff --exit-code
-      - name: go test
-        run: go test -v -count=1 -shuffle=on ./...
+      - run: make check
