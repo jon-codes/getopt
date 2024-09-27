@@ -10,7 +10,6 @@ package getopt
 import (
 	"slices"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 )
 
@@ -57,14 +56,16 @@ type Opt struct {
 }
 
 func OptStr(optStr string) (opts []Opt) {
-	for i := 0; i < len(optStr); i++ {
-		char := rune(optStr[i])
-		hasArg := NoArgument
+	var i int
+	for i < len(optStr) {
+		char, size := utf8.DecodeRuneInString(optStr[i:])
+		i += size
 
-		if i+1 < len(optStr) && optStr[i+1] == ':' {
+		hasArg := NoArgument
+		if i < len(optStr) && optStr[i] == ':' {
 			hasArg = RequiredArgument
 			i++
-			if i+1 < len(optStr) && optStr[i+1] == ':' {
+			if i < len(optStr) && optStr[i] == ':' {
 				hasArg = OptionalArgument
 				i++
 			}
@@ -149,6 +150,7 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 		return res, ErrDone
 	}
 
+	// TODO: cite permutation algo source (musl libc)
 	pStart := s.OptIndex
 	if []rune(s.Args[s.OptIndex])[0] != '-' {
 		switch p.Mode {
@@ -184,54 +186,6 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 	return res, err
 }
 
-func (s *State) permute(src, dest int) {
-	tmp := s.Args[src]
-	for i := src; i > dest; i-- {
-		s.Args[i] = s.Args[i-1]
-	}
-	s.Args[dest] = tmp
-}
-
-func findOpt(char rune, p Params) (opt Opt, found bool) {
-	if !isLegalOptRune(char) {
-		return opt, false
-	}
-	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return char == s.Char })
-	if i >= 0 {
-		return p.Opts[i], true
-	} else {
-		return opt, false
-	}
-}
-
-func findLongOpt(name string, p Params) (longOpt LongOpt, found bool) {
-	for _, r := range name {
-		if !isLegalOptRune(r) {
-			return longOpt, false
-		}
-	}
-
-	matched := []LongOpt{}
-
-	for _, lo := range p.LongOpts {
-		if len([]rune(name)) == 1 {
-			i := slices.IndexFunc(p.Opts, func(s Opt) bool { return []rune(name)[0] == s.Char })
-			if i >= 0 {
-				return lo, true
-			}
-		}
-		if strings.HasPrefix(lo.Name, name) {
-			matched = append(matched, lo)
-		}
-	}
-
-	if len(matched) == 1 {
-		return matched[0], true
-	}
-
-	return longOpt, false
-}
-
 func (s *State) readOpt(p Params) (res Result, err error) {
 	arg := s.Args[s.OptIndex]
 	checkLong := false
@@ -248,12 +202,13 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	checkNext := true
 
 	if checkLong {
+		maybeOpt := s.argIndex == 1 && p.Function == FuncGetOptLongOnly
 		name, inline, foundInline := strings.Cut(arg[s.argIndex:], "=")
-		opt, found := findLongOpt(arg[s.argIndex:], p)
+		opt, found := findLongOpt(name, maybeOpt, p)
 		if found {
 			s.OptIndex++
 			hasArg = opt.HasArg
-			res.Name = name
+			res.Name = opt.Name
 			if foundInline {
 				res.OptArg = inline
 				checkNext = false
@@ -263,11 +218,11 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	}
 
 	if res.Name == "" {
-		char, _ := utf8.DecodeRuneInString(arg[s.argIndex:])
+		char, size := utf8.DecodeRuneInString(arg[s.argIndex:])
 		res.Char = char
 		opt, found := findOpt(char, p)
 		if found {
-			s.argIndex++
+			s.argIndex += size
 			hasArg = opt.HasArg
 
 			if arg[s.argIndex:] == "" {
@@ -280,7 +235,7 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 				s.OptIndex++
 			}
 		} else {
-			s.OptIndex++
+			// s.OptIndex++
 			err = ErrUnknownOpt
 		}
 	}
@@ -309,15 +264,48 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	return res, err
 }
 
-func isGraph(r rune) bool {
-	// POSIX 7.3.1
-	// > Define characters to be classified as punctuation characters.
-	// > In the POSIX locale, neither the <space> nor any characters in classes alpha, digit, or cntrl shall be included.
-	return unicode.IsDigit(r) || unicode.IsLetter(r) || unicode.IsPunct(r)
+func (s *State) permute(src, dest int) {
+	tmp := s.Args[src]
+	for i := src; i > dest; i-- {
+		s.Args[i] = s.Args[i-1]
+	}
+	s.Args[dest] = tmp
 }
 
-func isLegalOptRune(r rune) bool {
-	// > A legitimate option character is any visible one byte ascii(7)
-	// > character (for which isgraph(3) would return nonzero) that is not '-', ':', or ';'.)
-	return r != ':' && r != ';' && r <= unicode.MaxASCII && isGraph(r)
+func findOpt(char rune, p Params) (opt Opt, found bool) {
+	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return char == s.Char })
+	if i >= 0 {
+		return p.Opts[i], true
+	} else {
+		return opt, false
+	}
+}
+
+func findLongOpt(name string, maybeOpt bool, p Params) (longOpt LongOpt, found bool) {
+	if len([]rune(name)) == 1 && maybeOpt {
+		_, found := findOpt(rune(name[0]), p)
+		if found {
+			return longOpt, false
+		}
+	}
+
+	matched := []LongOpt{}
+
+	for _, lo := range p.LongOpts {
+		// if len([]rune(name)) == 1 {
+		// 	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return []rune(name)[0] == s.Char })
+		// 	if i >= 0 {
+		// 		return lo, true
+		// 	}
+		// }
+		if strings.HasPrefix(lo.Name, name) {
+			matched = append(matched, lo)
+		}
+	}
+
+	if len(matched) == 1 {
+		return matched[0], true
+	}
+
+	return longOpt, false
 }
