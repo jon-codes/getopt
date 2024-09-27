@@ -87,16 +87,25 @@ func generateCaseFixtures(w io.Writer, c caseRecord, more bool) (err error) {
 			if err != nil {
 				return fmt.Errorf("error marshalling case fixture: %v", err)
 			}
-			w.Write(data)
+			_, err = w.Write(data)
+			if err != nil {
+				return fmt.Errorf("error writing to fixture file: %v", err)
+			}
 
 			if !(i == len(functions)-1 && j == len(modes)-1) {
-				w.Write([]byte(",\n\t"))
+				_, err = w.Write([]byte(",\n\t"))
+				if err != nil {
+					return fmt.Errorf("error writing to fixture file: %v", err)
+				}
 			}
 		}
 	}
 
 	if more {
-		w.Write([]byte(",\n\t"))
+		_, err = w.Write([]byte(",\n\t"))
+		if err != nil {
+			return fmt.Errorf("error writing to fixture file: %v", err)
+		}
 	}
 
 	return nil
@@ -104,10 +113,13 @@ func generateCaseFixtures(w io.Writer, c caseRecord, more bool) (err error) {
 
 func ProcessCases(in *os.File, out *os.File) error {
 	decoder := json.NewDecoder(in)
-	out.WriteString("[\n\t")
+	_, err := out.WriteString("[\n\t")
+	if err != nil {
+		return fmt.Errorf("error writing to fixture file: %v", err)
+	}
 
 	// read open bracket
-	_, err := decoder.Token()
+	_, err = decoder.Token()
 	if err != nil {
 		return fmt.Errorf("error decoding cases: %v", err)
 	}
@@ -118,7 +130,10 @@ func ProcessCases(in *os.File, out *os.File) error {
 		if err := decoder.Decode(&c); err != nil {
 			return fmt.Errorf("error decoding cases: %v", err)
 		}
-		generateCaseFixtures(out, c, decoder.More())
+		err = generateCaseFixtures(out, c, decoder.More())
+		if err != nil {
+			return fmt.Errorf("error generating case fixtures: %v", err)
+		}
 	}
 
 	// read closing bracket
@@ -127,7 +142,10 @@ func ProcessCases(in *os.File, out *os.File) error {
 		return fmt.Errorf("error decoding cases: %v", err)
 	}
 
-	out.WriteString("]")
+	_, err = out.WriteString("]")
+	if err != nil {
+		return fmt.Errorf("error writing to fixture file: %v", err)
+	}
 
 	return nil
 }
