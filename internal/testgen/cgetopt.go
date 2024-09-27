@@ -179,6 +179,10 @@ func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring strin
 	name := parseName(cLongoptions, char, optopt, flag)
 	mutArgs := copyCArgv(cArgc, cArgv)
 
+	if err == "-1" {
+		optarg = ""
+	}
+
 	if (err == "?" || err == ":") && (char == "" && name == "") {
 		val := strings.TrimPrefix(curr_arg, "-")
 		val = strings.TrimPrefix(val, "-")
