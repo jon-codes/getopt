@@ -1,4 +1,0 @@
-label,args,optstring,longopts
-"short_noarg_valid","[""name"",""-a""]","a",""
-"short_noarg_undef","[""name"",""-b""]","a",""
-"short_group","[""name"",""-abc""]","abc",""
