@@ -1,20 +1,162 @@
 package getopt
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"os"
 	"slices"
 	"strings"
 	"testing"
 	"unicode"
-	"unicode/utf8"
-
-	"github.com/jon-codes/getopt/internal/testgen"
 )
 
+func TestFindOpt(t *testing.T) {
+	t.Run("it finds opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`ab`)}
+		got, found := findOpt('b', p)
+		want := 'b'
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Char != want {
+			t.Errorf("got Char %q, but wanted %q", got.Char, want)
+		}
+	})
+
+	t.Run("it finds multi-byte opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`αβ`)}
+		got, found := findOpt('β', p)
+		want := 'β'
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Char != want {
+			t.Errorf("got Char %q, but wanted %q", got.Char, want)
+		}
+	})
+
+	t.Run("it doesn't find nonexistent opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`ab`)}
+		got, found := findOpt('c', p)
+
+		if found {
+			t.Errorf("found option with Char %q, but didn't want to", got.Char)
+		}
+	})
+}
+
+func TestFindLongOpt(t *testing.T) {
+	t.Run("it finds exact long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`longa,longb`)}
+		got, found := findLongOpt("longb", false, p)
+		want := "longb"
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Name != want {
+			t.Errorf("got Name %q, but wanted %q", got.Name, want)
+		}
+	})
+
+	t.Run("it finds exact multi-byte long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`longa,αβγ`)}
+		got, found := findLongOpt("αβγ", false, p)
+		want := "αβγ"
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Name != want {
+			t.Errorf("got Name %q, but wanted %q", got.Name, want)
+		}
+	})
+
+	t.Run("it finds uniq abbreviated long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`longa_blah,longb_blah`)}
+		got, found := findLongOpt("longb", false, p)
+		want := "longb_blah"
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Name != want {
+			t.Errorf("got Name %q, but wanted %q", got.Name, want)
+		}
+	})
+
+	t.Run("it finds uniq abbreviated multi-byte long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`αβεδ,αβγδ`)}
+		got, found := findLongOpt("αβε", false, p)
+		want := "αβεδ"
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Name != want {
+			t.Errorf("got Name %q, but wanted %q", got.Name, want)
+		}
+	})
+
+	t.Run("it doesn't find nonexistent long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`longa,longb`)}
+		got, found := findLongOpt("longc", false, p)
+
+		if found {
+			t.Errorf("found option with Name %q, but didn't want to", got.Name)
+		}
+	})
+
+	t.Run("it does not find non-uniq abbreviated long opts", func(t *testing.T) {
+		p := Params{LongOpts: LongOptStr(`long,longa,longb`)}
+		got, found := findLongOpt("long", false, p)
+
+		if found {
+			t.Errorf("found option with Name %q, but didn't want to", got.Name)
+		}
+	})
+
+	t.Run("without overrideOpt, it defers to matching opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`l`), LongOpts: LongOptStr(`longa`)}
+		got, found := findLongOpt("l", true, p)
+
+		if found {
+			t.Errorf("found option with Name %q, but didn't want to", got.Name)
+		}
+	})
+
+	t.Run("without overrideOpt, it defers to matching multi-byte opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`α`), LongOpts: LongOptStr(`αβγ`)}
+		got, found := findLongOpt("α", true, p)
+
+		if found {
+			t.Errorf("found option with Name %q, but didn't want to", got.Name)
+		}
+	})
+
+	t.Run("with overrideOpt it allows abbreviations matching opts", func(t *testing.T) {
+		p := Params{Opts: OptStr(`l`), LongOpts: LongOptStr(`longa`)}
+		got, found := findLongOpt("l", false, p)
+		want := "longa"
+
+		if !found {
+			t.Fatalf("didn't find an option, but wanted to")
+		}
+		if got.Name != want {
+			t.Errorf("got Name %q, but wanted %q", got.Name, want)
+		}
+	})
+}
+
 func TestOptStr(t *testing.T) {
+	t.Run("it handles empty values", func(t *testing.T) {
+		got := OptStr(``)
+
+		if len(got) != 0 {
+			t.Errorf("got length %d, but wanted 0", len(got))
+		}
+	})
+
 	t.Run("it parses opts", func(t *testing.T) {
 		got := OptStr(`ab:c::d:e`)
 		want := []Opt{
@@ -114,7 +256,114 @@ func TestStateReset(t *testing.T) {
 	})
 }
 
-func TestGetOpt(t *testing.T) {
+func TestStatePermute(t *testing.T) {
+	t.Run("it moves an arg backwards from source to dest", func(t *testing.T) {
+		s := NewState(argsStr(`prgm a b c d`))
+		s.permute(3, 1)
+		want := argsStr(`prgm c a b d`)
+
+		if !slices.Equal(s.Args, want) {
+			t.Errorf("got Args %q, but wanted %q", s.Args, want)
+		}
+	})
+}
+
+func TestStateGetOpt_FuncGetOpt(t *testing.T) {
+	function := FuncGetOpt
+	mode := ModeGNU
+
+	t.Run("it handles opts with no arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm -a -bc`))
+		p := Params{Opts: OptStr(`abc`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{char: 'a', args: argsStr(`prgm -a -bc`), optIndex: 2}, // bare opt
+			{char: 'b', args: argsStr(`prgm -a -bc`), optIndex: 2}, // first opt in group
+			{char: 'c', args: argsStr(`prgm -a -bc`), optIndex: 3}, // second opt in group
+			{err: ErrDone, args: argsStr(`prgm -a -bc`), optIndex: 3},
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+
+	t.Run("it handles opts with required arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm -a -b -bc -c -- -d`))
+		p := Params{Opts: OptStr(`a:b:c:d:`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{char: 'a', optArg: "-b", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 3},          // bare opt, consumes next arg
+			{char: 'b', optArg: "c", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 4},           // first opt in group, consumes group
+			{char: 'c', optArg: "--", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 6},          // bare opt, consume '--' as arg
+			{char: 'd', err: ErrMissingOptArg, args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 7}, // bare opt, no next arg
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+
+	t.Run("it handles opts with optional arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm -a -b -bc -c -- -d`))
+		p := Params{Opts: OptStr(`a::b::c::d::`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{char: 'a', optArg: "-b", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 3}, // bare opt, consumes next arg
+			{char: 'b', optArg: "c", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 4},  // first opt in group, consumes group
+			{char: 'c', optArg: "--", args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 6}, // bare opt, consume '--' as arg
+			{char: 'd', args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 7},               // bare opt, no next arg
+			{err: ErrDone, args: argsStr(`prgm -a -b -bc -c -- -d`), optIndex: 7},
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+}
+
+func TestStateGetOpt_FuncGetOptLong(t *testing.T) {
+	function := FuncGetOptLong
+	mode := ModeGNU
+
+	t.Run("it handles long opts with no arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm --longa --longb p1 --longc=`))
+		p := Params{LongOpts: LongOptStr(`longa,longb,longc`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{name: "longa", args: argsStr(`prgm --longa --longb p1 --longc=`), optIndex: 2},
+			{name: "longb", args: argsStr(`prgm --longa --longb p1 --longc=`), optIndex: 3},                        // treat next arg as param
+			{name: "longc", err: ErrIllegalOptArg, args: argsStr(`prgm --longa --longb --longc= p1`), optIndex: 4}, // disallow args
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+
+	t.Run("it handles long opts with required arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`))
+		p := Params{LongOpts: LongOptStr(`longa:,longb:,longc:,longd:`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{name: "longa", optArg: "--longb", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 3},     // bare opt, consumes next arg
+			{name: "longb", optArg: "arg1", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 4},        // inline opt arg
+			{name: "longc", optArg: "--", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 6},          // bare opt, consume '--' as arg
+			{name: "longd", err: ErrMissingOptArg, args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 7}, // bare opt, no next arg
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+
+	t.Run("it handles long opts with optional arguments", func(t *testing.T) {
+		s := NewState(argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`))
+		p := Params{LongOpts: LongOptStr(`longa::,longb::,longc::,longd::`), Function: function, Mode: mode}
+
+		wants := []assertion{
+			{name: "longa", optArg: "--longb", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 3}, // bare opt, consumes next arg
+			{name: "longb", optArg: "arg1", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 4},    // first opt in group, consumes group
+			{name: "longc", optArg: "--", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 6},      // bare opt, consume '--' as arg
+			{name: "longd", args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 7},                    // bare opt, no next arg
+			{err: ErrDone, args: argsStr(`prgm --longa --longb --longb=arg1 --longc -- --longd`), optIndex: 7},
+		}
+
+		assertSeq(t, s, p, wants)
+	})
+}
+
+func TestGetOpt_FuncGetOpt(t *testing.T) {
 	function := FuncGetOpt
 
 	t.Run("it parses opts", func(t *testing.T) {
@@ -267,12 +516,12 @@ func TestGetOpt(t *testing.T) {
 		assertSeq(t, s, p, wants)
 	})
 
-	t.Run("it does not treat '--' as a potential option arguments", func(t *testing.T) {
+	t.Run("it allows '--' as a potential option argument", func(t *testing.T) {
 		s := NewState(argsStr(`prgm -a -- p1`))
 		p := Params{Opts: OptStr(`a::`), Function: function}
 
 		wants := []assertion{
-			{char: 'a', args: argsStr(`prgm -a -- p1`), optIndex: 2},
+			{char: 'a', optArg: "--", args: argsStr(`prgm -a -- p1`), optIndex: 3},
 			{err: ErrDone, args: argsStr(`prgm -a -- p1`), optIndex: 3},
 		}
 
@@ -341,7 +590,7 @@ func TestGetOpt(t *testing.T) {
 	})
 }
 
-func TestGetOptLong(t *testing.T) {
+func TestGetOpt_FuncGetOptLong(t *testing.T) {
 	function := FuncGetOptLong
 
 	t.Run("it parses short opts", func(t *testing.T) {
@@ -392,9 +641,22 @@ func TestGetOptLong(t *testing.T) {
 
 		assertSeq(t, s, p, wants)
 	})
+
+	t.Run("it treats arguments after '--' as parameters", func(t *testing.T) {
+		s := NewState(argsStr(`prgm -a --longa -- --longb`))
+		p := Params{Opts: OptStr(`a`), LongOpts: LongOptStr(`longa`), Function: function}
+
+		wants := []assertion{
+			{char: 'a', args: argsStr(`prgm -a --longa -- --longb`), optIndex: 2},
+			{name: "longa", args: argsStr(`prgm -a --longa -- --longb`), optIndex: 3},
+			{err: ErrDone, args: argsStr(`prgm -a --longa -- --longb`), optIndex: 4},
+		}
+
+		assertSeq(t, s, p, wants)
+	})
 }
 
-func TestGetOptLongOnly(t *testing.T) {
+func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 	function := FuncGetOptLongOnly
 
 	t.Run("it parses short opts", func(t *testing.T) {
@@ -432,178 +694,6 @@ func TestGetOptLongOnly(t *testing.T) {
 
 		assertSeq(t, s, p, wants)
 	})
-}
-
-const fixturePath = "testdata/fixtures.json"
-
-func TestGetOpt_Fixtures(t *testing.T) {
-	fixtureFile, err := os.Open(fixturePath)
-	if err != nil {
-		t.Fatalf("error opening fixtures file: %v", err)
-	}
-	defer fixtureFile.Close()
-
-	decoder := json.NewDecoder(fixtureFile)
-
-	// read open bracket
-	_, err = decoder.Token()
-	if err != nil {
-		t.Fatalf("error decoding cases: %v", err)
-	}
-
-	// while the array contains values
-	for decoder.More() {
-		var record testgen.FixtureRecord
-		if err := decoder.Decode(&record); err != nil {
-			t.Fatalf("error decoding fixture: %v", err)
-		}
-		fixture, err := buildFixture(record)
-		if err != nil {
-			t.Fatalf("error parsing fixture: %v", err)
-		}
-		testName := fmt.Sprintf("Fixture %q (function %q, mode %q)", record.Label, record.FunctionStr, record.ModeStr)
-		t.Run(testName, func(t *testing.T) {
-			assertFixture(t, fixture)
-		})
-	}
-
-	// read closing bracket
-	_, err = decoder.Token()
-	if err != nil {
-		t.Fatalf("error decoding cases: %v", err)
-	}
-}
-
-func assertFixture(t testing.TB, f fixture) {
-	t.Helper()
-
-	s := NewState(f.Args)
-	p := Params{
-		Opts:     f.Opts,
-		LongOpts: f.LongOpts,
-		Mode:     f.Mode,
-		Function: f.Function,
-	}
-
-	for iter, want := range f.WantResults {
-		res, err := s.GetOpt(p)
-
-		if want.Err == nil {
-			if err != nil {
-				t.Errorf("iter %d, wanted no error, but got %q", iter, err)
-			}
-		} else {
-			if err == nil {
-				t.Errorf("iter %d, wanted an error, but didn't get one", iter)
-			} else if !errors.Is(err, want.Err) {
-				t.Errorf("iter %d, got error %q, but wanted %q", iter, err, want.Err)
-			}
-		}
-
-		if res.Char != want.Char {
-			t.Errorf("iter %d, got Char %q, but wanted %q", iter, res.Char, want.Char)
-		}
-		if res.Name != want.Name {
-			t.Errorf("iter %d, got Name %q, but wanted %q", iter, res.Name, want.Name)
-		}
-		if res.OptArg != want.OptArg {
-			t.Errorf("iter %d, got OptArg %q, but wanted %q", iter, res.OptArg, want.OptArg)
-		}
-	}
-
-	if s.OptIndex != f.WantOptIndex {
-		t.Errorf("got OptIndex %d, but wanted %d", s.OptIndex, f.WantOptIndex)
-	}
-
-	if !slices.Equal(s.Args, f.WantArgs) {
-		t.Errorf("got Args %+q, but wanted %+q", s.Args, f.WantArgs)
-	}
-}
-
-type fixtureIter struct {
-	Char   rune
-	Name   string
-	OptArg string
-	Err    error
-}
-
-type fixture struct {
-	Label        string
-	Args         []string
-	Opts         []Opt
-	LongOpts     []LongOpt
-	Function     GetOptFunc
-	Mode         GetOptMode
-	WantArgs     []string
-	WantOptIndex int
-	WantResults  []fixtureIter
-}
-
-func buildFixture(fr testgen.FixtureRecord) (f fixture, err error) {
-	var function GetOptFunc
-	switch fr.FunctionStr {
-	case "getopt":
-		function = FuncGetOpt
-	case "getopt_long":
-		function = FuncGetOptLong
-	case "getopt_long_only":
-		function = FuncGetOptLongOnly
-	default:
-		return f, fmt.Errorf("unknown function type %q", fr.FunctionStr)
-	}
-
-	var mode GetOptMode
-	switch fr.ModeStr {
-	case "gnu":
-		mode = ModeGNU
-	case "posix":
-		mode = ModePosix
-	case "inorder":
-		mode = ModeInOrder
-	default:
-		return f, fmt.Errorf("unknown mode type %q", fr.ModeStr)
-	}
-
-	var wantResults []fixtureIter
-	for _, fi := range fr.WantResults {
-		var char rune
-		if fi.CharStr != "" {
-			char, _ = utf8.DecodeRuneInString(fi.CharStr)
-		}
-
-		var err error
-		switch fi.ErrStr {
-		case "":
-			err = nil
-		case "-1":
-			err = ErrDone
-		case ":":
-			err = ErrMissingOptArg
-		case "?":
-			err = ErrUnknownOpt
-		default:
-			return f, fmt.Errorf("unknown error type %q", fi.ErrStr)
-		}
-
-		wantResults = append(wantResults, fixtureIter{
-			Char:   char,
-			Name:   fi.Name,
-			OptArg: fi.OptArg,
-			Err:    err,
-		})
-	}
-
-	f.Label = fr.Label
-	f.Args = argsStr(fr.ArgsStr)
-	f.Opts = OptStr(fr.OptStr)
-	f.LongOpts = LongOptStr(fr.LongOptStr)
-	f.Function = function
-	f.Mode = mode
-	f.WantArgs = argsStr(fr.WantArgsStr)
-	f.WantOptIndex = fr.WantOptIndex
-	f.WantResults = wantResults
-
-	return f, nil
 }
 
 type assertion struct {

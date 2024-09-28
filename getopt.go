@@ -18,8 +18,9 @@ type GetOptError string
 // Errors that can be returned by GetOpt.
 const (
 	ErrDone          = GetOptError("done")
-	ErrUnknownOpt    = GetOptError("unknown option")
-	ErrMissingOptArg = GetOptError("missing required option argument")
+	ErrUnknownOpt    = GetOptError("unrecognized option")
+	ErrIllegalOptArg = GetOptError("option does not take an argument")
+	ErrMissingOptArg = GetOptError("option requires an argument")
 )
 
 func (e GetOptError) Error() string {
@@ -152,7 +153,7 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 
 	// TODO: cite permutation algo source (musl libc)
 	pStart := s.OptIndex
-	if []rune(s.Args[s.OptIndex])[0] != '-' {
+	if s.Args[s.OptIndex] == "-" || []rune(s.Args[s.OptIndex])[0] != '-' {
 		switch p.Mode {
 		case ModePosix:
 			return res, ErrDone
@@ -173,6 +174,10 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 		}
 	}
 	pEnd := s.OptIndex
+
+	// if s.Args[s.OptIndex] == "-" {
+	// 	return res, ErrUnknownOpt
+	// }
 
 	res, err = s.readOpt(p)
 
@@ -202,14 +207,17 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	checkNext := true
 
 	if checkLong {
-		maybeOpt := s.argIndex == 1 && p.Function == FuncGetOptLongOnly
+		overrideOpt := s.argIndex == 1 && p.Function == FuncGetOptLongOnly
 		name, inline, foundInline := strings.Cut(arg[s.argIndex:], "=")
-		opt, found := findLongOpt(name, maybeOpt, p)
+		opt, found := findLongOpt(name, overrideOpt, p)
 		if found {
 			s.OptIndex++
 			hasArg = opt.HasArg
 			res.Name = opt.Name
 			if foundInline {
+				if opt.HasArg == NoArgument {
+					err = ErrIllegalOptArg
+				}
 				res.OptArg = inline
 				checkNext = false
 			}
@@ -240,10 +248,8 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	}
 
 	if checkNext && hasArg != NoArgument && s.OptIndex < len(s.Args) {
-		if s.Args[s.OptIndex] != "--" {
-			res.OptArg = s.Args[s.OptIndex]
-			s.OptIndex++
-		}
+		res.OptArg = s.Args[s.OptIndex]
+		s.OptIndex++
 	}
 
 	if res.Char == 0 && res.Name == "" {
@@ -278,9 +284,9 @@ func findOpt(char rune, p Params) (opt Opt, found bool) {
 	}
 }
 
-func findLongOpt(name string, maybeOpt bool, p Params) (longOpt LongOpt, found bool) {
-	if len([]rune(name)) == 1 && maybeOpt {
-		_, found := findOpt(rune(name[0]), p)
+func findLongOpt(name string, overrideOpt bool, p Params) (longOpt LongOpt, found bool) {
+	if len([]rune(name)) == 1 && overrideOpt {
+		_, found := findOpt([]rune(name)[0], p)
 		if found {
 			return longOpt, false
 		}
@@ -289,12 +295,6 @@ func findLongOpt(name string, maybeOpt bool, p Params) (longOpt LongOpt, found b
 	matched := []LongOpt{}
 
 	for _, lo := range p.LongOpts {
-		// if len([]rune(name)) == 1 {
-		// 	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return []rune(name)[0] == s.Char })
-		// 	if i >= 0 {
-		// 		return lo, true
-		// 	}
-		// }
 		if strings.HasPrefix(lo.Name, name) {
 			matched = append(matched, lo)
 		}

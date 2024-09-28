@@ -1,6 +1,5 @@
 .DEFAULT_GOAL = all
 
-GOCC ?= /usr/local/musl/bin/musl-gcc
 GOFLAGS = -ldflags '-linkmode external -extldflags "-static"'
 BINDIR = bin
 TMPDIR = tmp
@@ -13,7 +12,7 @@ GOPKG = github.com/jon-codes/getopt
 all: deps fmt vet test
 
 .PHONY: check
-check: deps-check fmt-check vet test
+check: deps-check fmt-check vet test-check
 
 ## deps: clean deps
 .PHONY: deps
@@ -42,6 +41,10 @@ vet:
 ## test: go test
 .PHONY: test
 test:
+	go test ./...
+
+.PHONY: test-check
+test-check:
 	go test -v ./...
 
 ## cover: go test coverage
@@ -50,10 +53,10 @@ cover: temp
 	go test -v -coverprofile $(TMPDIR)/cover.out $(GOPKG)
 	go tool cover -html=$(TMPDIR)/cover.out
 
-## build-testgen: build test generator
-.PHONY: build-testgen
-build-testgen:
-	CC=$(GOCC) go build $(GOFLAGS) -o $(TESTGEN_BIN) $(TESTGEN_SRC)
+## testgen-build: build testgen binary
+.PHONY: testgen-build
+testgen-build:
+	CC=$(shell which musl-gcc) go build $(GOFLAGS) -o $(TESTGEN_BIN) $(TESTGEN_SRC)
 
 ## testgen: generate tests
 .PHONY: testgen
