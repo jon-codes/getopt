@@ -18,7 +18,8 @@ TESTGEN_DEBUG_BIN := $(BINDIR)/testgen-debug
 TESTGEN_SRCS := $(wildcard $(TESTGEN_SRCDIR)/*.c)
 TESTGEN_OBJS := $(patsubst $(TESTGEN_SRCDIR)/%.c,$(OBJDIR)/%.o,$(TESTGEN_SRCS))
 TESTGEN_DEBUG_OBJS := $(patsubst $(TESTGEN_SRCDIR)/%.c,$(OBJDIR)/%_debug.o,$(TESTGEN_SRCS))
-TESTGEN_INCL := -I$(TESTGEN_SRCDIR) -I/usr/include -ljansson
+TESTGEN_INCL := -I$(TESTGEN_SRCDIR) -I/usr/include
+TESTGEN_LIBS := -ljansson
 TESTGEN_INPUT := $(TESTGEN_DATADIR)/cases.json
 TESTGEN_OUTPUT := $(TESTGEN_DATADIR)/fixtures.json
 
@@ -90,10 +91,10 @@ testgen-build: $(TESTGEN_BIN)
 testgen-debug: $(TESTGEN_DEBUG_BIN)
 
 $(TESTGEN_BIN): $(TESTGEN_OBJS) | $(BINDIR)
-	$(CC) $(CFLAGS) -o $@ $(TESTGEN_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(TESTGEN_OBJS) $(TESTGEN_LIBS)
 
 $(TESTGEN_DEBUG_BIN): $(TESTGEN_DEBUG_OBJS) | $(BINDIR)
-	$(CC) $(CFLAGS_DEBUG) -o $@ $(TESTGEN_DEBUG_OBJS)
+	$(CC) $(CFLAGS_DEBUG) -o $@ $(TESTGEN_DEBUG_OBJS) $(TESTGEN_LIBS)
 
 $(OBJDIR)/%.o: $(TESTGEN_SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -101,14 +102,14 @@ $(OBJDIR)/%.o: $(TESTGEN_SRCDIR)/%.c | $(OBJDIR)
 $(OBJDIR)/%_debug.o: $(TESTGEN_SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS_DEBUG) -c $< -o $@
 
-## valgrind: run testgen with valgrind
-.PHONY: valgrind
-valgrind: $(TESTGEN_DEBUG_BIN)
+## testgen-check: run testgen with valgrind
+.PHONY: testgen-check
+testgen-check: $(TESTGEN_DEBUG_BIN)
 	valgrind --leak-check=full $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
 
-## gdb: run testgen with gdb
-.PHONY: gdb
-gdb: $(TESTGEN_DEBUG_BIN)
+## testgen-debug: run testgen with gdb
+.PHONY: testgen-debug
+testgen-debug: $(TESTGEN_DEBUG_BIN)
 	gdb --args $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
 
 ## help: display this help
