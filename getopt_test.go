@@ -401,7 +401,7 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 		p := Params{Opts: OptStr(`b`), Function: function}
 
 		wants := []assertion{
-			{char: 'a', err: ErrUnknownOpt, args: argsStr(`prgm -a`), optIndex: 1},
+			{char: 'a', err: ErrUnknownOpt, args: argsStr(`prgm -a`), optIndex: 2},
 		}
 
 		assertSeq(t, s, p, wants)
@@ -573,6 +573,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 
 		wants := []assertion{
 			{char: '-', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 1},
+			{char: 'l', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 1},
+			{char: 'o', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 1},
+			{char: 'n', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 1},
+			{char: 'g', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 1},
+			{char: 'a', err: ErrUnknownOpt, args: argsStr(`prgm --longa`), optIndex: 2},
+			{err: ErrDone, args: argsStr(`prgm --longa`), optIndex: 2},
 		}
 
 		assertSeq(t, s, p, wants)
@@ -584,6 +590,11 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 
 		wants := []assertion{
 			{char: 'l', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'o', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'n', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'g', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'a', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 2},
+			{err: ErrDone, args: argsStr(`prgm -longa`), optIndex: 2},
 		}
 
 		assertSeq(t, s, p, wants)
@@ -637,6 +648,11 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 
 		wants := []assertion{
 			{char: 'l', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'o', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'n', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'g', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 1},
+			{char: 'a', err: ErrUnknownOpt, args: argsStr(`prgm -longa`), optIndex: 2},
+			{err: ErrDone, args: argsStr(`prgm -longa`), optIndex: 2},
 		}
 
 		assertSeq(t, s, p, wants)

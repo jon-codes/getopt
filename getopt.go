@@ -243,6 +243,12 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 				s.OptIndex++
 			}
 		} else {
+			s.argIndex++
+			if arg[s.argIndex:] == "" {
+				s.OptIndex++
+				s.argIndex = 0
+			} else {
+			}
 			err = ErrUnknownOpt
 		}
 	}
