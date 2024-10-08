@@ -12,7 +12,7 @@ with optional arguments, and permuting non-option parameters.
 This package emulates the C getopt function, but uses a state machine to
 encapsulate variables (instead of the global optind, optopt, optarg used in C).
 Rather than implement a high-level interface for defining CLI flags, it aims to
-implement an accurate emulation of getopt that can be used by higher-level
+implement an accurate emulation of C getopt that can be used by higher-level
 tools.
 
 Collect all options into a slice:
@@ -65,9 +65,19 @@ The specific libc function that is emulated can be configured via [Func]:
 
 The parser differs from GNU libc's getopt in the following ways:
   - It accepts multi-byte runes in short and long option definitions.
+  - This package does not implement the same argument permutation as GNU libc.
+    The value of OptInd and order of arguments mid-parsing may differ, and only
+    the final order is validated against the GNU implementation.
+
+# Acknowledgements
+
+The algorithm for permuting arguments is from [musl-libc], and is used under the linked MIT License:
+
+	Copyright © 2005-2020 Rich Felker, et al.
 
 [getopt]: https://www.man7.org/linux/man-pages/man3/getopt.3.html
 [GNU libc]: https://www.gnu.org/software/libc/
+[musl-libc]: https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT
 */
 package getopt
 
@@ -305,7 +315,8 @@ func (s *State) GetOpt(c Config) (res Result, err error) {
 		return res, ErrDone
 	}
 
-	// TODO: cite permutation algo source (musl libc)
+	// The algorithm for permuting arguments is from [musl-libc], and is used under the MIT License:
+	// Copyright © 2005-2020 Rich Felker, et al.
 	pStart := s.optInd
 	if s.args[s.optInd] == "" || s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
 		switch c.Mode {
