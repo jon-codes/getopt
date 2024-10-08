@@ -1,1 +1,23 @@
-[]
+[
+    { "label": "base", "args": ["prgm"], "opts": "", "lopts": ""},
+    { "label": "short_no_args_known", "args": ["prgm", "-a", "-bc"], "opts": "abc", "lopts": ""},
+    { "label": "short_no_args_unknown", "args": ["prgm", "-d", "-ef"], "opts": "abc", "lopts": ""},
+    { "label": "short_req_args_valid", "args": ["prgm", "-a", "a1", "-ba2", "-c", "a3"], "opts": "a:b:c:", "lopts": ""},
+    { "label": "short_req_args_unknown", "args": ["prgm", "-d", "a1", "-ea2", "-f", "a3"], "opts": "a:b:c:", "lopts": ""},
+    { "label": "short_req_args_invalid", "args": ["prgm", "-a", "a1", "-ba2", "-c"], "opts": "a:b:c:", "lopts": ""},
+    { "label": "short_opt_args_valid", "args": ["prgm", "-a", "p1", "-ba1", "-c"], "opts": "a::b::c::", "lopts": ""},
+    { "label": "short_opt_args_unknown", "args": ["prgm", "-d", "p1", "-ea1", "-f"], "opts": "a::b::c::", "lopts": ""},
+    { "label": "long_no_args_known", "args": ["prgm", "--longa", "--longb", "--longc"], "opts": "", "lopts": "longa,longb,longc"},
+    { "label": "long_no_args_unknown", "args": ["prgm", "--longd", "--longe", "--longf"], "opts": "", "lopts": "longa,longb,longc"},
+    { "label": "long_no_args_invalid", "args": ["prgm", "--longa=a1", "--longb=a2", "--longc=a3"], "opts": "", "lopts": "longa,longb,longc"},
+    { "label": "long_req_args_valid", "args": ["prgm", "--longa=a1", "--longb", "a2", "--longc", "a3"], "opts": "", "lopts": "longa:,longb:,longc:"},
+    { "label": "long_req_args_unknown", "args": ["prgm", "--longd=a1", "--longe", "a2", "--longf", "a3"], "opts": "", "lopts": "longa:,longb:,longc:"},
+    { "label": "long_req_args_invalid", "args": ["prgm", "--longa=a1", "--longb", "a2", "--longc"], "opts": "", "lopts": "longa:,longb:,longc:"},
+    { "label": "long_opt_args_valid", "args": ["prgm", "--longa=a1", "--longb", "p1", "--longc"], "opts": "", "lopts": "longa::,longb::,longc::"},
+    { "label": "long_opt_args_unknown", "args": ["prgm", "--longd=a1", "--longe", "p1", "--longf"], "opts": "", "lopts": "longa::,longb::,longc::"},
+    { "label": "long_only", "args": ["prgm", "-longa", "-longb=a1", "-longc"], "opts": "", "lopts": "longa,longb:,longc::"},
+    { "label": "long_only_with_short", "args": ["prgm", "-a", "-alonga", "-ba1", "-blongb=a2", "-c", "-clongc"], "opts": "ab:c::", "lopts": "alonga,blongb:,clongc::"},
+    { "label": "long_only_with_short_abbr", "args": ["prgm", "-a", "-al", "-ba1", "-bl=a2", "-c", "-cl"], "opts": "ab:c::l", "lopts": "alonga,blongb:,clongc::"},
+    { "label": "permute_and_terminate", "args": ["prgm", "p1", "-a", "p2", "p3", "-ba1", "-c", "p4", "--longa", "p5", "p6", "p7", "--longb", "a2", "--", "--longc"], "opts": "ab:c::", "lopts": "longa,longb:,longc::"},
+    { "label": "kitchen_sink", "args": ["prgm", "p1", "-a", "-longa", "p2", "p3", "-ba1", "p4", "--longb=a2", "-ca3", "--longc", "--", "-a"], "opts": "ab:c::", "lopts": "longa,longb:,longc::"}
+]

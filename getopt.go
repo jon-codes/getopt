@@ -8,24 +8,21 @@
 package getopt
 
 import (
+	"errors"
 	"slices"
 	"strings"
 	"unicode/utf8"
 )
 
-type GetOptError string
+// type GetOptError string
 
 // Errors that can be returned by GetOpt.
-const (
-	ErrDone          = GetOptError("done")
-	ErrUnknownOpt    = GetOptError("unrecognized option")
-	ErrIllegalOptArg = GetOptError("option does not take an argument")
-	ErrMissingOptArg = GetOptError("option requires an argument")
+var (
+	ErrDone          = errors.New("done")
+	ErrUnknownOpt    = errors.New("unrecognized option")
+	ErrIllegalOptArg = errors.New("option disallows arguments")
+	ErrMissingOptArg = errors.New("option requires an argument")
 )
-
-func (e GetOptError) Error() string {
-	return string(e)
-}
 
 type HasArg int
 
@@ -35,21 +32,47 @@ const (
 	OptionalArgument               // Indicates that the option optionally accepts an argument.
 )
 
-type GetOptFunc int
+type Func int
 
 const (
-	FuncGetOpt         GetOptFunc = iota // Indicates that GetOpt should behave like `getopt`.
-	FuncGetOptLong                       // Indicates that GetOpt should behave like `getopt_long`.
-	FuncGetOptLongOnly                   // Indicates that GetOpt should behave like `getopt_long_only`.
+	FuncGetOpt         Func = iota // Indicates that GetOpt should behave like `getopt`.
+	FuncGetOptLong                 // Indicates that GetOpt should behave like `getopt_long`.
+	FuncGetOptLongOnly             // Indicates that GetOpt should behave like `getopt_long_only`.
 )
 
-type GetOptMode int
+func (f Func) String() string {
+	switch f {
+	case FuncGetOpt:
+		return "getopt"
+	case FuncGetOptLong:
+		return "getopt_long"
+	case FuncGetOptLongOnly:
+		return "getopt_long_only"
+	default:
+		return "unknown"
+	}
+}
+
+type Mode int
 
 const (
-	ModeGNU GetOptMode = iota
+	ModeGNU Mode = iota
 	ModePosix
 	ModeInOrder
 )
+
+func (m Mode) String() string {
+	switch m {
+	case ModeGNU:
+		return "gnu"
+	case ModePosix:
+		return "posix"
+	case ModeInOrder:
+		return "inorder"
+	default:
+		return "unknown"
+	}
+}
 
 type Opt struct {
 	Char   rune
@@ -105,8 +128,8 @@ func LongOptStr(longOptStr string) (longOpts []LongOpt) {
 type Params struct {
 	Opts     []Opt
 	LongOpts []LongOpt
-	Function GetOptFunc
-	Mode     GetOptMode
+	Func     Func
+	Mode     Mode
 }
 
 type Result struct {
@@ -116,102 +139,110 @@ type Result struct {
 }
 
 type State struct {
-	Args     []string // the current argument slice
-	OptIndex int      // the next argument to process
-	argIndex int      // the next index of the current argument to process (when processing a short group)
+	args   []string // the current argument slice
+	optInd int      // the next argument to process
+	argInd int      // the next index of the current argument to process (when processing a short group)
 }
 
 const (
-	initOptIndex = 1
-	initArgIndex = 0
+	initOptInd = 1
+	initArgInd = 0
 )
 
 func NewState(args []string) *State {
 	s := &State{
-		Args:     args,
-		OptIndex: initOptIndex,
-		argIndex: initArgIndex,
+		args:   args,
+		optInd: initOptInd,
+		argInd: initArgInd,
 	}
 	return s
 }
 
+func (s *State) Args() []string {
+	return s.args
+}
+
+func (s *State) OptInd() int {
+	return s.optInd
+}
+
 func (s *State) Reset(args []string) {
-	s.Args = args
-	s.OptIndex = initOptIndex
-	s.argIndex = initArgIndex
+	s.args = args
+	s.optInd = initOptInd
+	s.argInd = initArgInd
 }
 
 func (s *State) GetOpt(p Params) (res Result, err error) {
-	if s.OptIndex >= len(s.Args) {
+	if s.optInd >= len(s.args) {
 		return res, ErrDone
 	}
 
-	if s.Args[s.OptIndex] == "--" {
-		s.OptIndex++
+	if s.args[s.optInd] == "--" {
+		s.optInd++
 		return res, ErrDone
 	}
 
 	// TODO: cite permutation algo source (musl libc)
-	pStart := s.OptIndex
-	if s.Args[s.OptIndex] == "-" || []rune(s.Args[s.OptIndex])[0] != '-' {
+	pStart := s.optInd
+	if s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
 		switch p.Mode {
 		case ModePosix:
 			return res, ErrDone
 		case ModeInOrder:
-			s.OptIndex++
-			return Result{Char: '\x01', OptArg: s.Args[s.OptIndex-1]}, nil
+			s.optInd++
+			return Result{Char: '\x01', OptArg: s.args[s.optInd-1]}, nil
 		default:
-			for i := s.OptIndex; i < len(s.Args); i++ {
-				arg := s.Args[i]
+			for i := s.optInd; i < len(s.args); i++ {
+				arg := s.args[i]
 				if len(arg) > 1 && []rune(arg)[0] == '-' {
-					s.OptIndex = i
+					s.optInd = i
 					break
 				}
-				if i == len(s.Args)-1 {
+				if i == len(s.args)-1 {
 					return res, ErrDone
 				}
 			}
 		}
 	}
-	pEnd := s.OptIndex
+	pEnd := s.optInd
 
-	// if s.Args[s.OptIndex] == "-" {
-	// 	return res, ErrUnknownOpt
-	// }
-
-	res, err = s.readOpt(p)
+	if s.args[s.optInd] == "--" {
+		s.optInd++
+		err = ErrDone
+	} else {
+		res, err = s.readOpt(p)
+	}
 
 	if pEnd > pStart {
-		count := s.OptIndex - pEnd
+		count := s.optInd - pEnd
 		for i := 0; i < count; i++ {
-			s.permute(s.OptIndex-1, pStart)
+			s.permute(s.optInd-1, pStart)
 		}
-		s.OptIndex = pStart + count
+		s.optInd = pStart + count
 	}
 	return res, err
 }
 
 func (s *State) readOpt(p Params) (res Result, err error) {
-	arg := s.Args[s.OptIndex]
+	arg := s.args[s.optInd]
 	checkLong := false
-	if s.argIndex == 0 {
-		s.argIndex++
-		checkLong = p.Function == FuncGetOptLongOnly
-		if arg[s.argIndex] == '-' && p.Function != FuncGetOpt {
-			s.argIndex++
+	if s.argInd == 0 {
+		s.argInd++
+		checkLong = p.Func == FuncGetOptLongOnly
+		if arg[s.argInd] == '-' && p.Func != FuncGetOpt {
+			s.argInd++
 			checkLong = true
 		}
 	}
 
 	hasArg := NoArgument
-	checkNext := true
+	name, inline, foundInline := strings.Cut(arg[s.argInd:], "=")
 
 	if checkLong {
-		overrideOpt := s.argIndex == 1 && p.Function == FuncGetOptLongOnly
-		name, inline, foundInline := strings.Cut(arg[s.argIndex:], "=")
+		overrideOpt := s.argInd == 1 && p.Func == FuncGetOptLongOnly
 		opt, found := findLongOpt(name, overrideOpt, p)
 		if found {
-			s.OptIndex++
+			s.optInd++
 			hasArg = opt.HasArg
 			res.Name = opt.Name
 			if foundInline {
@@ -219,51 +250,49 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 					err = ErrIllegalOptArg
 				}
 				res.OptArg = inline
-				checkNext = false
 			}
-			s.argIndex = 0
+			s.argInd = 0
 		}
 	}
 
 	if res.Name == "" {
-		char, size := utf8.DecodeRuneInString(arg[s.argIndex:])
+		char, size := utf8.DecodeRuneInString(arg[s.argInd:])
 		res.Char = char
 		opt, found := findOpt(char, p)
 		if found {
-			s.argIndex += size
+			s.argInd += size
 			hasArg = opt.HasArg
 
-			if arg[s.argIndex:] == "" {
-				s.OptIndex++
-				s.argIndex = 0
+			if arg[s.argInd:] == "" {
+				s.optInd++
+				s.argInd = 0
 			} else if hasArg != NoArgument {
-				res.OptArg = arg[s.argIndex:]
-				s.argIndex = 0
-				checkNext = false
-				s.OptIndex++
+				res.OptArg = arg[s.argInd:]
+				s.argInd = 0
+				s.optInd++
 			}
 		} else {
-			s.argIndex++
-			if arg[s.argIndex:] == "" {
-				s.OptIndex++
-				s.argIndex = 0
-			} else {
+			s.argInd++
+			if checkLong {
+				s.optInd++
+				s.argInd = 0
+				res.Char = 0
+				res.Name = name
+			} else if arg[s.argInd:] == "" {
+				s.optInd++
+				s.argInd = 0
 			}
 			err = ErrUnknownOpt
 		}
 	}
 
-	if checkNext && hasArg != NoArgument && s.OptIndex < len(s.Args) {
-		res.OptArg = s.Args[s.OptIndex]
-		s.OptIndex++
-	}
-
-	if res.Char == 0 && res.Name == "" {
-		err = ErrUnknownOpt
+	if hasArg == RequiredArgument && res.OptArg == "" && s.optInd < len(s.args) {
+		res.OptArg = s.args[s.optInd]
+		s.optInd++
 	}
 
 	if res.OptArg != "" && hasArg == NoArgument {
-		err = ErrUnknownOpt
+		err = ErrIllegalOptArg
 	}
 
 	if res.OptArg == "" && hasArg == RequiredArgument {
@@ -274,11 +303,11 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 }
 
 func (s *State) permute(src, dest int) {
-	tmp := s.Args[src]
+	tmp := s.args[src]
 	for i := src; i > dest; i-- {
-		s.Args[i] = s.Args[i-1]
+		s.args[i] = s.args[i-1]
 	}
-	s.Args[dest] = tmp
+	s.args[dest] = tmp
 }
 
 func findOpt(char rune, p Params) (opt Opt, found bool) {
