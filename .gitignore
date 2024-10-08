@@ -10,7 +10,7 @@ go.work
 .vscode/*
 !.vscode/extensions.json
 
-.vgcore.*
+vgcore.*
 *.log
 *.local
 *.o

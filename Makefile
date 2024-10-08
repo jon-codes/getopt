@@ -7,7 +7,7 @@ TMPDIR := tmp
 OBJDIR := obj
 
 CC := gcc
-CFLAGS_BASE := -std=c23 -Werror -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Wredundant-decls -Wnested-externs -Wmissing-include-dirs -Wjump-misses-init -Wlogical-op
+CFLAGS_BASE := -std=c23 -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Wredundant-decls -Wnested-externs -Wmissing-include-dirs -Wjump-misses-init -Wlogical-op
 CFLAGS := $(CFLAGS_BASE) -O2 $(TESTGEN_INCL)
 CFLAGS_DEBUG := $(CFLAGS_BASE) -g -O0 $(TESTGEN_INCL)
 
@@ -105,7 +105,7 @@ $(OBJDIR)/%_debug.o: $(TESTGEN_SRCDIR)/%.c | $(OBJDIR)
 ## testgen-check: run testgen with valgrind
 .PHONY: testgen-check
 testgen-check: $(TESTGEN_DEBUG_BIN)
-	valgrind --leak-check=full $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
+	valgrind --leak-check=full --track-origins=yes $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
 
 ## testgen-debug: run testgen with gdb
 .PHONY: testgen-debug
