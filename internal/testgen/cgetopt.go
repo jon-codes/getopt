@@ -21,6 +21,7 @@ int reset_getopt() {
 }
 */
 import "C"
+
 import (
 	"fmt"
 	"strings"

@@ -20,8 +20,10 @@ func (c caseRecord) Args() (args []string) {
 	return argsStr(c.ArgsStr)
 }
 
-var modes = []string{"gnu", "posix", "inorder"}
-var functions = []string{"getopt", "getopt_long", "getopt_long_only"}
+var (
+	modes     = []string{"gnu", "posix", "inorder"}
+	functions = []string{"getopt", "getopt_long", "getopt_long_only"}
+)
 
 type fixtureIter struct {
 	CharStr string `json:"char"`
