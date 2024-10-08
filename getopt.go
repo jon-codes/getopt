@@ -1,84 +1,135 @@
-// Package getopt provides a Go implementation of the Unix `getopt` function
-// for parsing command-line options.
-//
-// This package parses of command-line arguments using the POSIX convention,
-// supporting short options (e.g., -a) and arguments for these options. It also
-// supports GNU extensions to allow for long options (e.g., --option) and
-// options with optional arguments.
+/*
+Package getopt provides a zero-dependency Go implementation of the Unix [getopt]
+function for parsing command-line options.
+
+The getopt package supports parsing options using the POSIX convention,
+supporting short options (e.g., -a) and option arguments. It also supports
+GNU extensions, including support for long options (e.g., --option), options
+with optional arguments, and permuting non-option parameters.
+
+# Usage
+
+This package emulates the C getopt function, but uses a state machine to
+encapsulate variables (instead of the global optind, optopt, optarg used in C).
+Rather than implement a high-level interface for defining CLI flags, it aims to
+implement an accurate emulation of getopt that can be used by higher-level
+tools.
+
+Collect all options into a slice:
+
+	state := getopt.NewState(os.Args)
+	config := getopt.Config{Opts: getopt.OptStr(`ab:c::`)}
+	opts, err := state.Parse(config)
+
+Iterate over each option for finer control:
+
+	state := getopt.NewState(os.Args)
+	config := getopt.Config{Opts: getopt.OptStr(`ab:c::`)}
+
+	for opt, err := range state.All(config) {
+		if err != nil {
+			break
+		}
+		switch opt.Char {
+		case 'a':
+			fmt.Printf("Found opt a\n")
+		case 'b':
+			fmt.Printf("Found opt b with arg %s\n", opt.OptArg)
+		case 'c':
+			fmt.Printf("Found opt c")
+			if opt.OptArg != "" {
+				fmt.Printf(" with arg %s", opt.OptArg)
+			}
+			fmt.Printf("\n")
+		}
+	}
+
+# Behavior
+
+This package uses [GNU libc] as a reference for behavior, since many expect the
+non-standard features it provides.
+
+It supports the same configuration options as the GNU options via [Mode]:
+  - [ModeGNU]: enables default behavior.
+  - [ModePosix]: enables the '+' compatibility mode, disabling permuting
+    arguments and terminating parsing on the first parameter.
+  - [ModeInOrder]: enables the '-' optstring prefix mode, treating all
+    parameters as though they were arguments to an option with character code 1.
+
+The specific libc function that is emulated can be configured via [Func]:
+  - [FuncGetOpt]: parse only traditional POSIX short options (e.g., -a).
+  - [FuncGetOptLong]: parse short options, and GNU extension long options (e.g.,
+    --option).
+  - [FuncGetOptLongOnly]: parse short and long options, but allow long options
+    to begin with a single dash (like [pkg/flag]).
+
+The parser differs from GNU libc's getopt in the following ways:
+  - It accepts multi-byte runes in short and long option definitions.
+
+[getopt]: https://www.man7.org/linux/man-pages/man3/getopt.3.html
+[GNU libc]: https://www.gnu.org/software/libc/
+*/
 package getopt
 
 import (
 	"errors"
+	"iter"
 	"slices"
 	"strings"
 	"unicode/utf8"
 )
 
-// type GetOptError string
-
-// Errors that can be returned by GetOpt.
+// Errors that can be returned during option parsing.
 var (
-	ErrDone          = errors.New("done")
-	ErrUnknownOpt    = errors.New("unrecognized option")
-	ErrIllegalOptArg = errors.New("option disallows arguments")
-	ErrMissingOptArg = errors.New("option requires an argument")
+	ErrDone          = errors.New("getopt: done")
+	ErrUnknownOpt    = errors.New("getopt: unrecognized option")
+	ErrIllegalOptArg = errors.New("getopt: option disallows arguments")
+	ErrMissingOptArg = errors.New("getopt: option requires an argument")
 )
 
+// HasArg defines rules for parsing option arguments.
 type HasArg int
 
 const (
-	NoArgument       HasArg = iota // Indicates that the option disallows arguments.
-	RequiredArgument               // Indicates that the option requires an argument.
-	OptionalArgument               // Indicates that the option optionally accepts an argument.
+	NoArgument       HasArg = iota // option may not take an argument
+	RequiredArgument               // option requires an argument
+	OptionalArgument               // option may optionally accept an argument
 )
 
+// Func indicates which POSIX or GNU extension function to emulate during option
+// parsing.
 type Func int
 
 const (
-	FuncGetOpt         Func = iota // Indicates that GetOpt should behave like `getopt`.
-	FuncGetOptLong                 // Indicates that GetOpt should behave like `getopt_long`.
-	FuncGetOptLongOnly             // Indicates that GetOpt should behave like `getopt_long_only`.
+	FuncGetOpt         Func = iota // behave like `getopt`
+	FuncGetOptLong                 // behave like `getopt_long`
+	FuncGetOptLongOnly             // behave like `getopt_long_only`
 )
 
-func (f Func) String() string {
-	switch f {
-	case FuncGetOpt:
-		return "getopt"
-	case FuncGetOptLong:
-		return "getopt_long"
-	case FuncGetOptLongOnly:
-		return "getopt_long_only"
-	default:
-		return "unknown"
-	}
-}
-
+// Mode indicates which behavior to enable during option parsing.
 type Mode int
 
 const (
-	ModeGNU Mode = iota
-	ModePosix
-	ModeInOrder
+	ModeGNU     Mode = iota // enable GNU extension behavior
+	ModePosix               // enable POSIX behavior (terminate on first parameter)
+	ModeInOrder             // enable "in-order" behavior (parse parameters as options)
 )
 
-func (m Mode) String() string {
-	switch m {
-	case ModeGNU:
-		return "gnu"
-	case ModePosix:
-		return "posix"
-	case ModeInOrder:
-		return "inorder"
-	default:
-		return "unknown"
-	}
-}
-
+// An Opt is a parsing rule for a short, single-character command-line option
+// (e.g., -a).
 type Opt struct {
-	Char   rune
-	HasArg HasArg
+	Char   rune   // option character
+	HasArg HasArg // option argument rule
 }
 
+// OptStr parses an option string, returning a slice of Opt.
+//
+// The option string uses the same format as [getopt], with each character
+// representing an option. Options with a single ":" suffix require an argument.
+// Options with a double "::" suffix optionally accept an argument. Options with
+// no suffix do not allow arguments.
+//
+// [getopt]: https://www.man7.org/linux/man-pages/man3/getopt.3.html
 func OptStr(optStr string) (opts []Opt) {
 	var i int
 	for i < len(optStr) {
@@ -100,11 +151,20 @@ func OptStr(optStr string) (opts []Opt) {
 	return opts
 }
 
+// A LongOpt is a parsing rule for a named, long command-line option
+// (e.g., --option).
 type LongOpt struct {
-	Name   string
-	HasArg HasArg
+	Name   string // option name
+	HasArg HasArg // option argument rule
 }
 
+// OptStr parses a long option string, returning a slice of LongOpt.
+//
+// The option string uses the same format as --longoptions in the GNU
+// [getopt(1)] command. Option names are comma-separated, and argument rules are
+// designated by colon suffixes, like with [OptStr].
+//
+// [getopt(1)]: https://www.man7.org/linux/man-pages/man1/getopt.1.html
 func LongOptStr(longOptStr string) (longOpts []LongOpt) {
 	items := strings.Split(longOptStr, ",")
 	if len(items) == 1 && items[0] == "" {
@@ -125,23 +185,26 @@ func LongOptStr(longOptStr string) (longOpts []LongOpt) {
 	return longOpts
 }
 
-type Params struct {
-	Opts     []Opt
-	LongOpts []LongOpt
-	Func     Func
-	Mode     Mode
+// A Config defines the rules and behavior used when parsing options. Note the
+// zero values for Func ([FuncGetOpt]) and Mode ([ModeGNU]), which will
+// determine the parsing behavior unless set otherwise.
+type Config struct {
+	Opts     []Opt     // allowed short options
+	LongOpts []LongOpt // allowed long options
+	Func     Func      // parsing function
+	Mode     Mode      // parsing behavior
 }
 
 type Result struct {
-	Char   rune
-	Name   string
-	OptArg string
+	Char   rune   // parsed short option character
+	Name   string // parsed long option name
+	OptArg string // parsed option argument
 }
 
 type State struct {
-	args   []string // the current argument slice
-	optInd int      // the next argument to process
-	argInd int      // the next index of the current argument to process (when processing a short group)
+	args   []string // current argument slice
+	optInd int      // next argument to process
+	argInd int      // next index of the current argument to process (when processing a short group)
 }
 
 const (
@@ -149,6 +212,8 @@ const (
 	initArgInd = 0
 )
 
+// NewState returns a new [State] to parse options from args, starting with the
+// element at index 1.
 func NewState(args []string) *State {
 	s := &State{
 		args:   args,
@@ -158,21 +223,79 @@ func NewState(args []string) *State {
 	return s
 }
 
+// Parse returns a slice of [Result] by calling [State.GetOpt] until an error is
+// returned.
+func (s *State) Parse(c Config) ([]Result, error) {
+	results := []Result{}
+	for res, err := range s.All(c) {
+		if err != nil {
+			if err == ErrDone {
+				return results, nil
+			}
+			return results, err
+		}
+		results = append(results, res)
+	}
+	return results, nil
+}
+
+// All returns an iterator that yields successive parsing results.
+func (s *State) All(c Config) iter.Seq2[Result, error] {
+	return func(yield func(Result, error) bool) {
+		for {
+			result, err := s.GetOpt(c)
+			if err == ErrDone {
+				return
+			}
+			if !yield(result, err) {
+				return
+			}
+		}
+	}
+}
+
+// Args returns the current slice of arguments in [State].
+// This may differ from the slice used to initialize State, since parsing can
+// permute the argument order.
 func (s *State) Args() []string {
 	return s.args
 }
 
+// OptInd returns the index of the next argument that will be parsed in State.
+//
+// After all options have been parsed, OptInd will index the first parameter
+// (non-option) argument returned by [State.Args]. If no parameters are present,
+// the index will be invalid, since the next argument's index would have
+// exceeded the bounds of the argument slice. [State.Params] provides safe
+// access to parameters.
 func (s *State) OptInd() int {
 	return s.optInd
 }
 
+// Params returns the slice of parameter (non-option) arguments. If parsing has
+// not successfully completed with [ErrDone], this may include arguments that
+// otherwise be parsed as options.
+func (s *State) Params() []string {
+	if s.optInd >= len(s.args) {
+		return []string{}
+	}
+	return s.args[s.optInd:]
+}
+
+// Reset recycles an existing [State], resetting it to parse options from args,
+// starting with the element at index 1.
 func (s *State) Reset(args []string) {
 	s.args = args
 	s.optInd = initOptInd
 	s.argInd = initArgInd
 }
 
-func (s *State) GetOpt(p Params) (res Result, err error) {
+// GetOpt returns the result of parsing the next option in [State].
+//
+// If parsing has successfully completed, err will be [ErrDone]. Otherwise, the
+// returned [Result] indicates either a valid option, or the properties of an
+// invalid option if err is non-nil.
+func (s *State) GetOpt(c Config) (res Result, err error) {
 	if s.optInd >= len(s.args) {
 		return res, ErrDone
 	}
@@ -185,7 +308,7 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 	// TODO: cite permutation algo source (musl libc)
 	pStart := s.optInd
 	if s.args[s.optInd] == "" || s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
-		switch p.Mode {
+		switch c.Mode {
 		case ModePosix:
 			return res, ErrDone
 		case ModeInOrder:
@@ -210,7 +333,7 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 		s.optInd++
 		err = ErrDone
 	} else {
-		res, err = s.readOpt(p)
+		res, err = s.readOpt(c)
 	}
 
 	if pEnd > pStart {
@@ -223,13 +346,13 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 	return res, err
 }
 
-func (s *State) readOpt(p Params) (res Result, err error) {
+func (s *State) readOpt(c Config) (res Result, err error) {
 	arg := s.args[s.optInd]
 	checkLong := false
 	if s.argInd == 0 {
 		s.argInd++
-		checkLong = p.Func == FuncGetOptLongOnly
-		if arg[s.argInd] == '-' && p.Func != FuncGetOpt {
+		checkLong = c.Func == FuncGetOptLongOnly
+		if arg[s.argInd] == '-' && c.Func != FuncGetOpt {
 			s.argInd++
 			checkLong = true
 		}
@@ -238,9 +361,9 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	hasArg := NoArgument
 	name, inline, foundInline := strings.Cut(arg[s.argInd:], "=")
 
-	if checkLong {
-		overrideOpt := s.argInd == 1 && p.Func == FuncGetOptLongOnly
-		opt, found := findLongOpt(name, overrideOpt, p)
+	if checkLong && name != "" {
+		overrideOpt := s.argInd == 1 && c.Func == FuncGetOptLongOnly
+		opt, found := findLongOpt(name, overrideOpt, c)
 		if found {
 			s.optInd++
 			hasArg = opt.HasArg
@@ -258,7 +381,7 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 	if res.Name == "" {
 		char, size := utf8.DecodeRuneInString(arg[s.argInd:])
 		res.Char = char
-		opt, found := findOpt(char, p)
+		opt, found := findOpt(char, c)
 		if found {
 			s.argInd += size
 			hasArg = opt.HasArg
@@ -310,18 +433,18 @@ func (s *State) permute(src, dest int) {
 	s.args[dest] = tmp
 }
 
-func findOpt(char rune, p Params) (opt Opt, found bool) {
-	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return char == s.Char })
+func findOpt(char rune, c Config) (opt Opt, found bool) {
+	i := slices.IndexFunc(c.Opts, func(s Opt) bool { return char == s.Char })
 	if i >= 0 {
-		return p.Opts[i], true
+		return c.Opts[i], true
 	} else {
 		return opt, false
 	}
 }
 
-func findLongOpt(name string, overrideOpt bool, p Params) (longOpt LongOpt, found bool) {
+func findLongOpt(name string, overrideOpt bool, c Config) (longOpt LongOpt, found bool) {
 	if len([]rune(name)) == 1 && overrideOpt {
-		_, found := findOpt([]rune(name)[0], p)
+		_, found := findOpt([]rune(name)[0], c)
 		if found {
 			return longOpt, false
 		}
@@ -329,7 +452,7 @@ func findLongOpt(name string, overrideOpt bool, p Params) (longOpt LongOpt, foun
 
 	matched := []LongOpt{}
 
-	for _, lo := range p.LongOpts {
+	for _, lo := range c.LongOpts {
 		if strings.HasPrefix(lo.Name, name) {
 			matched = append(matched, lo)
 		}

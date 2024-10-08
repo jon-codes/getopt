@@ -8,6 +8,106 @@ import (
 	"unicode"
 )
 
+func TestParse(t *testing.T) {
+	t.Run("with empty results", func(t *testing.T) {
+		s := testState(`prgm p1 p2 p3`)
+		c := Config{Opts: OptStr(`abc`)}
+		got, err := s.Parse(c)
+		if err != nil {
+			t.Fatalf("got error, but didn't expect one")
+		}
+		if len(got) != 0 {
+			t.Errorf("got len %d, but wanted %d", len(got), 0)
+		}
+
+		wantParams := argsStr(`p1 p2 p3`)
+
+		if !slices.Equal(s.Params(), wantParams) {
+			t.Errorf("got %+v, but wanted %+v", s.Params(), wantParams)
+		}
+	})
+
+	t.Run("with results", func(t *testing.T) {
+		s := testState(`prgm -a -bc p1 p2 p3`)
+		c := Config{Opts: OptStr(`abc`)}
+		got, err := s.Parse(c)
+		want := []Result{
+			{Char: 'a'},
+			{Char: 'b'},
+			{Char: 'c'},
+		}
+
+		if err != nil {
+			t.Fatalf("got error, but didn't expect one")
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("got %+v, but wanted %+v", got, want)
+		}
+
+		wantParams := argsStr(`p1 p2 p3`)
+
+		if !slices.Equal(s.Params(), wantParams) {
+			t.Errorf("got %+v, but wanted %+v", s.Params(), wantParams)
+		}
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		s := testState(`prgm -a -d -bc p1 p2 p3`)
+		c := Config{Opts: OptStr(`abc`)}
+		got, err := s.Parse(c)
+		want := []Result{
+			{Char: 'a'},
+		}
+
+		if err != ErrUnknownOpt {
+			t.Fatalf("got no error, but expected %v", ErrUnknownOpt)
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("got %+v, but wanted %+v", got, want)
+		}
+
+		wantParams := argsStr(`-bc p1 p2 p3`)
+
+		if !slices.Equal(s.Params(), wantParams) {
+			t.Errorf("got %+v, but wanted %+v", s.Params(), wantParams)
+		}
+	})
+}
+
+func TestAll(t *testing.T) {
+	s := testState(`prgm -a -dc`)
+	c := Config{Opts: OptStr(`abc`)}
+	want := []struct {
+		res Result
+		err error
+	}{
+		{res: Result{Char: 'a'}, err: nil},
+		{res: Result{Char: 'd'}, err: ErrUnknownOpt},
+		{res: Result{Char: 'c'}, err: nil},
+		{res: Result{}, err: ErrDone},
+	}
+
+	i := 0
+	for opt, err := range s.All(c) {
+		if want[i].err != nil {
+			if err == nil {
+				t.Fatalf("got no error, but wanted one")
+			}
+			if err != want[i].err {
+				t.Fatalf("got error %v, but wanted %v", err, want[i].err)
+			}
+		} else {
+			if err != nil {
+				t.Fatalf("got err %v, but wanted none", err)
+			}
+		}
+		if opt.Char != want[i].res.Char {
+			t.Fatalf("got Char %q, but wanted %q", opt.Char, want[i].res.Char)
+		}
+		i++
+	}
+}
+
 func TestNew(t *testing.T) {
 	got := NewState(argsStr(`prgm -a -b`))
 	want := State{optInd: 1, args: []string{"prgm", "-a", "-b"}}
@@ -22,7 +122,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestArgs(t *testing.T) {
-	s := NewState(argsStr(`prgm -a -b`))
+	s := testState(`prgm -a -bc`)
 	got := s.Args()
 
 	if !slices.Equal(got, s.args) {
@@ -31,7 +131,7 @@ func TestArgs(t *testing.T) {
 }
 
 func TestOptInd(t *testing.T) {
-	s := NewState(argsStr(`prgm -a -b`))
+	s := NewState(argsStr(`prgm -a -bc`))
 	got := s.OptInd()
 
 	if got != s.optInd {
@@ -39,11 +139,40 @@ func TestOptInd(t *testing.T) {
 	}
 }
 
+func TestParams(t *testing.T) {
+	t.Run("when params are present", func(t *testing.T) {
+		s := testState(`prgm -a p1 -bc p2 p3`)
+		c := Config{Opts: OptStr(`abc`)}
+
+		for range s.All(c) {
+		}
+		got := s.Params()
+		want := []string{"p1", "p2", "p3"}
+
+		if !slices.Equal(got, want) {
+			t.Errorf("got %+q, but wanted %+q", got, want)
+		}
+	})
+
+	t.Run("when params are not present", func(t *testing.T) {
+		s := testState(`prgm -a -bc`)
+		c := Config{Opts: OptStr(`abc`)}
+
+		for range s.All(c) {
+		}
+		got := len(s.Params())
+
+		if got != 0 {
+			t.Errorf("got len %d, but wanted %d", got, 0)
+		}
+	})
+}
+
 func TestReset(t *testing.T) {
 	s := NewState(argsStr(`prgm -ab -c`))
-	p := Params{Opts: OptStr(`abc`)}
+	c := Config{Opts: OptStr(`abc`)}
 
-	assertGetOpt(t, s, p, assertion{
+	assertGetOpt(t, s, c, assertion{
 		char:   'a',
 		args:   argsStr(`prgm -ab -c`),
 		optInd: 1,
@@ -51,7 +180,7 @@ func TestReset(t *testing.T) {
 
 	s.Reset(argsStr(`prgm -c -b`))
 
-	assertGetOpt(t, s, p, assertion{
+	assertGetOpt(t, s, c, assertion{
 		char:   'c',
 		args:   argsStr(`prgm -c -b`),
 		optInd: 2,
@@ -67,7 +196,7 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 
 	t.Run("it parses short opts", func(t *testing.T) {
 		s := testState(`prgm -a -bc`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`abc`),
 			Func: function,
 			Mode: ModeGNU,
@@ -79,12 +208,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a -bc`), optInd: 3},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses short opts with required args", func(t *testing.T) {
 		s := testState(`prgm -aarg1 -b arg2 -c`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`a:b:c:`),
 			Func: function,
 			Mode: ModeGNU,
@@ -96,12 +225,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -aarg1 -b arg2 -c`), optInd: 5},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses short opts with optional args", func(t *testing.T) {
 		s := testState(`prgm -aarg1 -b -c`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`a::b::c::`),
 			Func: function,
 			Mode: ModeGNU,
@@ -113,12 +242,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -aarg1 -b -c`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it permutes parameters in gnu mode", func(t *testing.T) {
 		s := testState(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`ab:c::`),
 			Func: function,
 			Mode: ModeGNU,
@@ -130,12 +259,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a -b arg1 -c -- p1 p2 p3 p4 p5`), optInd: 6},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it does not permute parameters in posix mode", func(t *testing.T) {
 		s := testState(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`ab:c::`),
 			Func: function,
 			Mode: ModePosix,
@@ -145,12 +274,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`), optInd: 2},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it treats parameters as options in inorder mode", func(t *testing.T) {
 		s := testState(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`ab:c::`),
 			Func: function,
 			Mode: ModeInOrder,
@@ -166,12 +295,12 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`), optInd: 10},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it repeats when done", func(t *testing.T) {
 		s := testState(`prgm -a -bc`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`abc`),
 			Func: function,
 			Mode: ModeGNU,
@@ -185,7 +314,7 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a -bc`), optInd: 3},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 }
 
@@ -194,7 +323,7 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 
 	t.Run("it parses short opts", func(t *testing.T) {
 		s := testState(`prgm -a -bc`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`abc`),
 			Func: function,
 			Mode: ModeGNU,
@@ -206,12 +335,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a -bc`), optInd: 3},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses long opts", func(t *testing.T) {
 		s := testState(`prgm --longa --longb --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb,longc`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -223,12 +352,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb --longc`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses long opts with required arguments", func(t *testing.T) {
 		s := testState(`prgm --longa arg1 --longb=arg2 --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa:,longb:,longc:`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -240,12 +369,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa arg1 --longb=arg2 --longc`), optInd: 5},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses long opts with optional arguments", func(t *testing.T) {
 		s := testState(`prgm --longa p1 --longb=arg1 --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa::,longb::,longc::`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -257,12 +386,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb=arg1 --longc p1`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it permutes parameters in gnu mode", func(t *testing.T) {
 		s := testState(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -274,12 +403,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb arg1 --longc -- p1 p2 p3 p4 p5`), optInd: 6},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it does not permute parameters in posix mode", func(t *testing.T) {
 		s := testState(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModePosix,
@@ -289,12 +418,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`), optInd: 2},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it treats parameters as options in inorder mode", func(t *testing.T) {
 		s := testState(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModeInOrder,
@@ -310,12 +439,12 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`), optInd: 10},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it repeats when done", func(t *testing.T) {
 		s := testState(`prgm --longa --longb --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb,longc`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -329,7 +458,7 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb --longc`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 }
 
@@ -338,7 +467,7 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 
 	t.Run("it parses short opts", func(t *testing.T) {
 		s := testState(`prgm -a -bc`)
-		p := Params{
+		c := Config{
 			Opts: OptStr(`abc`),
 			Func: function,
 			Mode: ModeGNU,
@@ -350,12 +479,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -a -bc`), optInd: 3},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses long opts", func(t *testing.T) {
 		s := testState(`prgm --longa --longb --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb,longc`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -367,12 +496,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb --longc`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses shortened long opts", func(t *testing.T) {
 		s := testState(`prgm -longa -longb -longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb,longc`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -384,12 +513,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa -longb -longc`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses shortened long opts with required arguments", func(t *testing.T) {
 		s := testState(`prgm -longa arg1 -longb=arg2 -longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa:,longb:,longc:`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -401,12 +530,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa arg1 -longb=arg2 -longc`), optInd: 5},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it parses long opts with optional arguments", func(t *testing.T) {
 		s := testState(`prgm -longa p1 -longb=arg1 -longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa::,longb::,longc::`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -418,12 +547,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa -longb=arg1 -longc p1`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it permutes parameters in gnu mode", func(t *testing.T) {
 		s := testState(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -435,12 +564,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa -longb arg1 -longc -- p1 p2 p3 p4 p5`), optInd: 6},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it does not permute parameters in posix mode", func(t *testing.T) {
 		s := testState(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModePosix,
@@ -450,12 +579,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`), optInd: 2},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it treats parameters as options in inorder mode", func(t *testing.T) {
 		s := testState(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
 			Mode:     ModeInOrder,
@@ -471,12 +600,12 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`), optInd: 10},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 
 	t.Run("it repeats when done", func(t *testing.T) {
 		s := testState(`prgm --longa --longb --longc`)
-		p := Params{
+		c := Config{
 			LongOpts: LongOptStr(`longa,longb,longc`),
 			Func:     function,
 			Mode:     ModeGNU,
@@ -490,7 +619,7 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 			{err: ErrDone, args: argsStr(`prgm --longa --longb --longc`), optInd: 4},
 		}
 
-		assertSeq(t, s, p, wants)
+		assertSeq(t, s, c, wants)
 	})
 }
 
@@ -503,7 +632,7 @@ type assertion struct {
 	optInd int
 }
 
-func assertGetOpt(t testing.TB, s *State, p Params, want assertion) {
+func assertGetOpt(t testing.TB, s *State, p Config, want assertion) {
 	t.Helper()
 
 	res, err := s.GetOpt(p)
@@ -536,7 +665,7 @@ func assertGetOpt(t testing.TB, s *State, p Params, want assertion) {
 	}
 }
 
-func assertSeq(t testing.TB, s *State, p Params, wants []assertion) {
+func assertSeq(t testing.TB, s *State, p Config, wants []assertion) {
 	t.Helper()
 
 	for _, want := range wants {

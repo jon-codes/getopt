@@ -1,0 +1,12 @@
+# 2024/10/08 02:13:23.229139 [TestGetOpt_Property] [rapid] draw args: []string{}
+# 2024/10/08 02:13:23.229148 [TestGetOpt_Property] [rapid] draw params: getopt.Params{Opts:[]getopt.Opt{}, LongOpts:[]getopt.LongOpt{}, Func:0, Mode:0}
+# 2024/10/08 02:13:23.229170 [TestGetOpt_Property] OptInd exceeded last arg + 1: args len is 0, bug OptInd is 1
+# 
+v0.4.8#10966891259882451049
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0

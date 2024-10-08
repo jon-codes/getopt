@@ -1,0 +1,24 @@
+# 2024/10/08 12:31:01.591713 [TestGetOpt_Property] [rapid] draw args: []string{"", "-\x00"}
+# 2024/10/08 12:31:01.591721 [TestGetOpt_Property] [rapid] draw config: getopt.Config{Opts:[]getopt.Opt{}, LongOpts:[]getopt.LongOpt{}, Func:0, Mode:0}
+# 2024/10/08 12:31:01.591726 [TestGetOpt_Property] result failed to describe error context
+# 
+v0.4.8#7725669341369569825
+0x5555555555555
+0x0
+0x5555555555555
+0x5555555555555
+0x0
+0x9867f1f40f739
+0xd
+0x5555555555555
+0x0
+0xe3e05a098777c
+0x22
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0
+0x0

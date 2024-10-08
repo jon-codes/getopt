@@ -396,6 +396,330 @@
         ]
     },
     {
+        "label": "weird",
+        "func": "getopt",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 2,
+        "want_args": [
+            "prgm",
+            "-=",
+            "",
+            "-"
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "-",
+                "err": ""
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 2,
+        "want_args": [
+            "prgm",
+            "-=",
+            "",
+            "-"
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "-",
+                "err": ""
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long_only",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 2,
+        "want_args": [
+            "prgm",
+            "-=",
+            "",
+            "-"
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long_only",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
+        "label": "weird",
+        "func": "getopt_long_only",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ],
+        "want_results": [
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 1,
+                "name": "",
+                "optarg": "-",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "",
+            "-",
+            "-="
+        ]
+    },
+    {
         "label": "short_no_args_known",
         "func": "getopt",
         "mode": "gnu",
