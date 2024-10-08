@@ -1,6 +1,7 @@
 [
     { "label": "empty", "args": [""], "opts": "", "lopts": ""},
     { "label": "base", "args": ["prgm"], "opts": "", "lopts": ""},
+    { "label": "weird", "args": ["prgm", "", "-", "-="], "opts": "", "lopts": ""},
     { "label": "short_no_args_known", "args": ["prgm", "-a", "-bc"], "opts": "abc", "lopts": ""},
     { "label": "short_no_args_unknown", "args": ["prgm", "-d", "-ef"], "opts": "abc", "lopts": ""},
     { "label": "short_req_args_valid", "args": ["prgm", "-a", "a1", "-ba2", "-c", "a3"], "opts": "a:b:c:", "lopts": ""},

@@ -32,7 +32,7 @@ func TestGetOpt_Fixtures(t *testing.T) {
 		if err := decoder.Decode(&f); err != nil {
 			t.Fatalf("error decoding fixture: %v", err)
 		}
-		testName := fmt.Sprintf("%s %s %s)", f.Label, f.Func.String(), f.Mode.String())
+		testName := fmt.Sprintf("%s %s %s)", f.Label, funcString(f.Func), modeString(f.Mode))
 		t.Run(testName, func(t *testing.T) {
 			assertFixture(t, f)
 		})
@@ -45,11 +45,37 @@ func TestGetOpt_Fixtures(t *testing.T) {
 	}
 }
 
+func funcString(f Func) string {
+	switch f {
+	case FuncGetOpt:
+		return "getopt"
+	case FuncGetOptLong:
+		return "getopt_long"
+	case FuncGetOptLongOnly:
+		return "getopt_long_only"
+	default:
+		return "unknown"
+	}
+}
+
+func modeString(m Mode) string {
+	switch m {
+	case ModeGNU:
+		return "gnu"
+	case ModePosix:
+		return "posix"
+	case ModeInOrder:
+		return "inorder"
+	default:
+		return "unknown"
+	}
+}
+
 func assertFixture(t testing.TB, f fixture) {
 	t.Helper()
 
 	s := NewState(f.Args)
-	p := Params{
+	c := Config{
 		Opts:     f.Opts,
 		LongOpts: f.LongOpts,
 		Mode:     f.Mode,
@@ -57,7 +83,7 @@ func assertFixture(t testing.TB, f fixture) {
 	}
 
 	for iter, want := range f.WantResults {
-		res, err := s.GetOpt(p)
+		res, err := s.GetOpt(c)
 
 		if want.Err == nil {
 			if err != nil {
