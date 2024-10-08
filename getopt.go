@@ -235,15 +235,12 @@ func (s *State) readOpt(p Params) (res Result, err error) {
 				s.OptIndex++
 			}
 		} else {
-			// s.OptIndex++
 			err = ErrUnknownOpt
 		}
 	}
 
 	if checkNext && hasArg != NoArgument && s.OptIndex < len(s.Args) {
-		if s.Args[s.OptIndex] == "--" {
-			s.OptIndex++
-		} else {
+		if s.Args[s.OptIndex] != "--" {
 			res.OptArg = s.Args[s.OptIndex]
 			s.OptIndex++
 		}
