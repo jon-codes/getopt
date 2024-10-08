@@ -1,83 +1,8 @@
 /*
-Package getopt provides a zero-dependency Go implementation of the Unix [getopt]
-function for parsing command-line options.
-
-The getopt package supports parsing options using the POSIX convention,
-supporting short options (e.g., -a) and option arguments. It also supports
-GNU extensions, including support for long options (e.g., --option), options
-with optional arguments, and permuting non-option parameters.
-
-# Usage
-
-This package emulates the C getopt function, but uses a state machine to
-encapsulate variables (instead of the global optind, optopt, optarg used in C).
-Rather than implement a high-level interface for defining CLI flags, it aims to
-implement an accurate emulation of C getopt that can be used by higher-level
-tools.
-
-Collect all options into a slice:
-
-	state := getopt.NewState(os.Args)
-	config := getopt.Config{Opts: getopt.OptStr(`ab:c::`)}
-	opts, err := state.Parse(config)
-
-Iterate over each option for finer control:
-
-	state := getopt.NewState(os.Args)
-	config := getopt.Config{Opts: getopt.OptStr(`ab:c::`)}
-
-	for opt, err := range state.All(config) {
-		if err != nil {
-			break
-		}
-		switch opt.Char {
-		case 'a':
-			fmt.Printf("Found opt a\n")
-		case 'b':
-			fmt.Printf("Found opt b with arg %s\n", opt.OptArg)
-		case 'c':
-			fmt.Printf("Found opt c")
-			if opt.OptArg != "" {
-				fmt.Printf(" with arg %s", opt.OptArg)
-			}
-			fmt.Printf("\n")
-		}
-	}
-
-# Behavior
-
-This package uses [GNU libc] as a reference for behavior, since many expect the
-non-standard features it provides.
-
-It supports the same configuration options as the GNU options via [Mode]:
-  - [ModeGNU]: enables default behavior.
-  - [ModePosix]: enables the '+' compatibility mode, disabling permuting
-    arguments and terminating parsing on the first parameter.
-  - [ModeInOrder]: enables the '-' optstring prefix mode, treating all
-    parameters as though they were arguments to an option with character code 1.
-
-The specific libc function that is emulated can be configured via [Func]:
-  - [FuncGetOpt]: parse only traditional POSIX short options (e.g., -a).
-  - [FuncGetOptLong]: parse short options, and GNU extension long options (e.g.,
-    --option).
-  - [FuncGetOptLongOnly]: parse short and long options, but allow long options
-    to begin with a single dash (like [pkg/flag]).
-
-The parser differs from GNU libc's getopt in the following ways:
-  - It accepts multi-byte runes in short and long option definitions.
-  - This package does not implement the same argument permutation as GNU libc.
-    The value of OptInd and order of arguments mid-parsing may differ, and only
-    the final order is validated against the GNU implementation.
-
-# Acknowledgements
-
-The algorithm for permuting arguments is from [musl-libc], and is used under the linked MIT License:
-
-	Copyright © 2005-2020 Rich Felker, et al.
+Package getopt implements the Unix [getopt] function for parsing command-line
+options.
 
 [getopt]: https://www.man7.org/linux/man-pages/man3/getopt.3.html
-[GNU libc]: https://www.gnu.org/software/libc/
-[musl-libc]: https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT
 */
 package getopt
 
