@@ -184,7 +184,7 @@ func (s *State) GetOpt(p Params) (res Result, err error) {
 
 	// TODO: cite permutation algo source (musl libc)
 	pStart := s.optInd
-	if s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
+	if s.args[s.optInd] == "" || s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
 		switch p.Mode {
 		case ModePosix:
 			return res, ErrDone
