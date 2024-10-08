@@ -13,16 +13,16 @@ import (
 	"unicode/utf8"
 )
 
-type GetOptErr string
+type GetOptError string
 
 // Errors that can be returned by GetOpt.
 const (
-	ErrDone          = GetOptErr("done")
-	ErrUnknownOpt    = GetOptErr("unknown option")
-	ErrMissingOptArg = GetOptErr("missing required option argument")
+	ErrDone          = GetOptError("done")
+	ErrUnknownOpt    = GetOptError("unknown option")
+	ErrMissingOptArg = GetOptError("missing required option argument")
 )
 
-func (e GetOptErr) Error() string {
+func (e GetOptError) Error() string {
 	return string(e)
 }
 
