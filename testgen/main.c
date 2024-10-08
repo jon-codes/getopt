@@ -89,20 +89,74 @@ static Config *create_config(int argc, char *argv[]) {
 
 typedef struct Case {
     char *label;
+    char *opts;
+    char *lopts;
+    char **argv;
+    int argc;
 } Case;
 
-void case_destroy(Case *c) {
+static void case_clear(Case *c) {
     if (c != NULL) {
         free(c->label);
+        free(c->opts);
+        free(c->lopts);
+        if (c->argv != NULL) {
+            for (int i = 0; i < c->argc; i++) {
+                free(c->argv[i]);
+            }
+            free(c->argv);
+        }
     }
+    c->label = NULL;
+    c->opts = NULL;
+    c->lopts = NULL;
+    c->argv = NULL;
+    c->argc = 0;
 }
 
 typedef struct CaseIterator {
-    bool has_next;
+    FILE *f;
+    Case current;
+    Result last_result;
 } CaseIterator;
 
-CaseIterator *create_case_iterator(Config *cfg) {
-    return NULL;
+static void case_iterator_destroy(CaseIterator *iter) {
+    if (iter != NULL) {
+        if (iter->f != NULL) {
+            fclose(iter->f);
+        }
+        case_clear(&iter->current);
+        free(iter);
+    }
+}
+
+static CaseIterator *create_case_iterator(Config *cfg) {
+    CaseIterator *iter = calloc(1, sizeof(CaseIterator));
+    if (iter == NULL) {
+        fprintf(stderr, "error allocating case iterator: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    iter->f = fopen(cfg->inpath, "r");
+    if (iter->f == NULL) {
+        fprintf(stderr, "error opening infile %s: %s\n", cfg->inpath, strerror(errno));
+        case_iterator_destroy(iter);
+        return NULL;
+    }
+
+    return iter;
+}
+
+static bool iterator_has_next(CaseIterator *iter) {
+    return iter != NULL && iter->last_result == RESULT_OK;
+}
+
+static Case *iterator_next(CaseIterator *iter) {
+    if (!iterator_has_next(iter)) {
+        // *item = NULL;
+        // return iter->last_result;
+    }
+    return NULL
 }
 
 int main(int argc, char *argv[]) {
@@ -111,29 +165,17 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    FILE *infile = fopen(cfg->inpath, "r");
-    if (infile == NULL) {
-        fprintf(stderr, "error opening %s: %s\n", cfg->inpath, strerror(errno));
+    CaseIterator *iter = create_case_iterator(cfg);
+    if (iter == NULL) {
         config_destroy(cfg);
         return EXIT_FAILURE;
     }
 
-    FILE *outfile = fopen(cfg->outpath, "w");
-    if (outfile == NULL) {
-        fprintf(stderr, "error opening %s: %s\n", cfg->inpath, strerror(errno));
-        fclose(infile);
-        config_destroy(cfg);
-        return EXIT_FAILURE;
+    for (;;) {
+        Case *res = iterator_next(iter);
     }
 
-    // CaseIterator *iter = create_case_iterator(cfg);
-    // if (iter == NULL) {
-    //     config_destroy(cfg);
-    //     return EXIT_FAILURE;
-    // }
-
-    fclose(infile);
-    fclose(outfile);
+    case_iterator_destroy(iter);
     config_destroy(cfg);
     return EXIT_SUCCESS;
 }

@@ -1,4 +1,4 @@
-.DEFAULT_GOAL = all
+.DEFAULT_GOAL := all
 
 GOPKG := github.com/jon-codes/getopt
 
@@ -9,7 +9,7 @@ OBJDIR := obj
 CC := gcc
 CFLAGS_BASE := -std=c23 -Werror -Wall -Wextra -Wpedantic -Wno-unused-parameter -Wshadow -Wwrite-strings -Wstrict-prototypes -Wold-style-definition -Wredundant-decls -Wnested-externs -Wmissing-include-dirs -Wjump-misses-init -Wlogical-op
 CFLAGS := $(CFLAGS_BASE) -O2 $(TESTGEN_INCL)
-CFLAGS_DEBUG = $(CFLAGS_BASE) -g -O0 $(TESTGEN_INCL)
+CFLAGS_DEBUG := $(CFLAGS_BASE) -g -O0 $(TESTGEN_INCL)
 
 TESTGEN_SRCDIR := testgen
 TESTGEN_DATADIR := testdata
@@ -79,6 +79,9 @@ $(TMPDIR) $(BINDIR) $(OBJDIR):
 ## testgen: generate test data
 testgen: $(TESTGEN_OUTPUT)
 
+$(TESTGEN_OUTPUT): $(TESTGEN_BIN) $(TESTGEN_INPUT)
+	$< -o $@ $(TESTGEN_INPUT)
+
 ## testgen-build: build testgen binary
 .PHONY: testgen-build
 testgen-build: $(TESTGEN_BIN)
@@ -101,12 +104,12 @@ $(OBJDIR)/%_debug.o: $(TESTGEN_SRCDIR)/%.c | $(OBJDIR)
 ## valgrind: run testgen with valgrind
 .PHONY: valgrind
 valgrind: $(TESTGEN_DEBUG_BIN)
-	valgrind --leak-check=full $(TESTGEN_DEBUG_BIN) -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
+	valgrind --leak-check=full $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
 
 ## gdb: run testgen with gdb
 .PHONY: gdb
 gdb: $(TESTGEN_DEBUG_BIN)
-	gdb --args $(TESTGEN_DEBUG_BIN) -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
+	gdb --args $< -o $(TESTGEN_OUTPUT) $(TESTGEN_INPUT)
 
 ## help: display this help
 .PHONY: help
