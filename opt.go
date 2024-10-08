@@ -48,15 +48,15 @@ func (f GetOptFunc) String() string {
 	}
 }
 
-type Mode int
+type GetOptMode int
 
 const (
-	ModeGNU Mode = iota
+	ModeGNU GetOptMode = iota
 	ModePosix
 	ModeInOrder
 )
 
-func (m Mode) String() string {
+func (m GetOptMode) String() string {
 	switch m {
 	case ModeGNU:
 		return "gnu"
@@ -83,7 +83,7 @@ type GetOptParams struct {
 	Opts       []Opt
 	LongOpts   []LongOpt
 	GetOptFunc GetOptFunc
-	Mode       Mode
+	Mode       GetOptMode
 }
 
 type GetOptResult struct {

@@ -1,4 +1,4 @@
-package testutils
+package testgen
 
 /*
 #include <stdlib.h>
@@ -38,10 +38,6 @@ type cGetOptResult struct {
 	args   []string
 }
 
-type optFlag struct {
-	flag C.int
-}
-
 func BuildCArgv(args []string) (C.int, []*C.char, func()) {
 	cArgc := C.int(len(args))
 	cArgv := make([]*C.char, cArgc)
@@ -56,7 +52,7 @@ func BuildCArgv(args []string) (C.int, []*C.char, func()) {
 	return cArgc, cArgv, free
 }
 
-func buildCOptstring(optstring string, mode opt.Mode) (*C.char, func()) {
+func buildCOptstring(optstring string, mode opt.GetOptMode) (*C.char, func()) {
 	optstring = ":" + optstring // always act like opterr = 0
 	if mode == opt.ModePosix {
 		optstring = "+" + optstring
@@ -149,7 +145,7 @@ func copyCArgv(cArgc C.int, cArgv []*C.char) []string {
 	return args
 }
 
-func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring string, function opt.GetOptFunc, mode opt.Mode) (cGetOptResult, error) {
+func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring string, function opt.GetOptFunc, mode opt.GetOptMode) (cGetOptResult, error) {
 	cOptstring, freeCOptstring := buildCOptstring(optstring, mode)
 	defer freeCOptstring()
 
@@ -177,14 +173,6 @@ func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring strin
 	optarg := C.GoString(C.get_optarg())
 	optind := int(C.get_optind())
 	optopt := int(C.get_optopt())
-
-	fmt.Printf("ret: %d\n", ret)
-	fmt.Printf("optarg: %s\n", optarg)
-	fmt.Printf("optind: %d\n", optind)
-	fmt.Printf("optopt: %d\n", optopt)
-	fmt.Printf("flag: %d\n", *flag)
-	fmt.Printf("longindex: %d\n", cLongindex)
-	fmt.Printf("------------\n")
 
 	char, err := parseRet(ret, optopt)
 	name := parseName(cLongoptions, char, optopt, flag)
