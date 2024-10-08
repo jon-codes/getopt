@@ -1,0 +1,217 @@
+[
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt",
+		"mode": "gnu",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt",
+		"mode": "posix",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt",
+		"mode": "inorder",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long",
+		"mode": "gnu",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long",
+		"mode": "posix",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long",
+		"mode": "inorder",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long_only",
+		"mode": "gnu",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long_only",
+		"mode": "posix",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	},
+	{
+		"label": "one_opt_valid",
+		"args": "prgm -a",
+		"opts": "a",
+		"longopts": "",
+		"function": "getopt_long_only",
+		"mode": "inorder",
+		"want_args": "prgm -a",
+		"want_optindex": 2,
+		"want_results": [
+			{
+				"char": "a",
+				"name": "",
+				"opt_arg": "",
+				"err": ""
+			},
+			{
+				"char": "",
+				"name": "",
+				"opt_arg": "",
+				"err": "-1"
+			}
+		]
+	}]

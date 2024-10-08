@@ -25,8 +25,6 @@ import (
 	"fmt"
 	"strings"
 	"unsafe"
-
-	opt "github.com/jon-codes/getopt"
 )
 
 type cGetOptResult struct {
@@ -52,12 +50,13 @@ func BuildCArgv(args []string) (C.int, []*C.char, func()) {
 	return cArgc, cArgv, free
 }
 
-func buildCOptstring(optstring string, mode opt.GetOptMode) (*C.char, func()) {
+func buildCOptstring(optstring string, mode string) (*C.char, func()) {
 	optstring = ":" + optstring // always act like opterr = 0
-	if mode == opt.ModePosix {
+
+	if mode == "posix" { // posixly_correct
 		optstring = "+" + optstring
 	}
-	if mode == opt.ModeInOrder {
+	if mode == "inorder" { // inorder
 		optstring = "-" + optstring
 	}
 	cOptstring := C.CString(optstring)
@@ -114,7 +113,7 @@ func parseRet(ret int, optopt int) (string, string) {
 		err = "-1"
 	} else if ret == ':' || ret == '?' {
 		err = string(rune(ret))
-		if optopt >= 0 {
+		if optopt > 0 {
 			char = string(rune(optopt))
 		}
 	} else if ret != 0 {
@@ -145,7 +144,7 @@ func copyCArgv(cArgc C.int, cArgv []*C.char) []string {
 	return args
 }
 
-func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring string, function opt.GetOptFunc, mode opt.GetOptMode) (cGetOptResult, error) {
+func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring string, function string, mode string) (cGetOptResult, error) {
 	cOptstring, freeCOptstring := buildCOptstring(optstring, mode)
 	defer freeCOptstring()
 
@@ -160,23 +159,34 @@ func cGetOpt(cArgc C.int, cArgv []*C.char, optstring string, longoptstring strin
 	var ret int
 
 	switch function {
-	case opt.FuncGetOpt:
+	case "getopt":
 		ret = int(C.getopt(cArgc, &cArgv[0], cOptstring))
-	case opt.FuncGetOptLong:
+	case "getopt_long":
 		ret = int(C.getopt_long(cArgc, &cArgv[0], cOptstring, &cLongoptions[0], &cLongindex))
-	case opt.FuncGetOptLongOnly:
+	case "getopt_long_only":
 		ret = int(C.getopt_long_only(cArgc, &cArgv[0], cOptstring, &cLongoptions[0], &cLongindex))
 	default:
-		return cGetOptResult{}, fmt.Errorf("unknown function type: %d", function)
+		return cGetOptResult{}, fmt.Errorf("unknown function type: %q", function)
 	}
 
 	optarg := C.GoString(C.get_optarg())
 	optind := int(C.get_optind())
 	optopt := int(C.get_optopt())
+	curr_arg := C.GoString(cArgv[optind-1])
 
 	char, err := parseRet(ret, optopt)
 	name := parseName(cLongoptions, char, optopt, flag)
 	mutArgs := copyCArgv(cArgc, cArgv)
+
+	if (err == "?" || err == ":") && (char == "" && name == "") {
+		val := strings.TrimPrefix(curr_arg, "-")
+		val = strings.TrimPrefix(val, "-")
+		if len(val) == 1 {
+			char = val
+		} else {
+			name = val
+		}
+	}
 
 	return cGetOptResult{
 		char:   char,

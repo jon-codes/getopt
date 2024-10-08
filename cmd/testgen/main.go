@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jon-codes/getopt/testgen"
+	"github.com/jon-codes/getopt/internal/testgen"
 )
 
 const (
-	inpath  = "testdata/cases.csv"
-	outpath = "testdata/fixtures.csv"
+	inpath  = "testdata/cases.json"
+	outpath = "testdata/fixtures.json"
 )
 
 func main() {
@@ -27,5 +27,9 @@ func main() {
 	}
 	defer outfile.Close()
 
-	testgen.ProcessCases(infile, outfile)
+	err = testgen.ProcessCases(infile, outfile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error processing test cases: %v\n", err)
+		os.Exit(1)
+	}
 }

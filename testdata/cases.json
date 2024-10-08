@@ -1,0 +1,3 @@
+[
+  { "label": "one_opt_valid", "args": "prgm -a", "opts": "a" }
+]
