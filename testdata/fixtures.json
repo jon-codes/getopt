@@ -1,5 +1,203 @@
 [
     {
+        "label": "empty",
+        "func": "getopt",
+        "mode": "gnu",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt",
+        "mode": "posix",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt",
+        "mode": "inorder",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long",
+        "mode": "gnu",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long",
+        "mode": "posix",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long",
+        "mode": "inorder",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long_only",
+        "mode": "gnu",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long_only",
+        "mode": "posix",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
+        "label": "empty",
+        "func": "getopt_long_only",
+        "mode": "inorder",
+        "args": [
+            ""
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [],
+        "want_optind": 1,
+        "want_args": [
+            ""
+        ]
+    },
+    {
         "label": "base",
         "func": "getopt",
         "mode": "gnu",
