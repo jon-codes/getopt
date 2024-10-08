@@ -27,7 +27,7 @@ const (
 	OptionalArgument
 )
 
-type ShortOpt struct {
+type Opt struct {
 	Char   rune
 	HasArg HasArgType
 }
@@ -38,8 +38,8 @@ type LongOpt struct {
 }
 
 type GetOptParams struct {
-	Short []ShortOpt
-	Long  []LongOpt
+	Opts     []Opt
+	LongOpts []LongOpt
 }
 
 type GetOptResult struct {
@@ -69,134 +69,100 @@ func (g *GetOptState) Reset(args []string) {
 	g.ArgIndex = 0
 }
 
+func (g *GetOptState) ReadOpt(p GetOptParams) (GetOptResult, error) {
+	arg := g.Args[g.OptIndex]
+	subArg := arg[g.ArgIndex:]
+	r, _ := utf8.DecodeRuneInString(subArg) // TODO: handle errors
+
+	if !isLegalOptRune(r) {
+		return GetOptResult{Char: r}, ErrIllegalOpt
+	}
+
+	i := slices.IndexFunc(p.Opts, func(s Opt) bool { return r == s.Char })
+	if i < 0 {
+		return GetOptResult{Char: r}, ErrIllegalOpt
+	}
+	opt := p.Opts[i]
+	g.ArgIndex++
+
+	if arg[g.ArgIndex:] != "" {
+		// there are more runes in the arg
+
+		if opt.HasArg == RequiredArgument || opt.HasArg == OptionalArgument {
+			// the rest of this arg is this options's argument
+			optArg := arg[g.ArgIndex:]
+			g.ArgIndex = 0
+			g.OptIndex++
+			return GetOptResult{Char: r, OptArg: optArg}, nil
+		}
+
+		return GetOptResult{Char: r}, nil
+	} else {
+		// this is the final rune in the arg
+		g.ArgIndex = 0
+		g.OptIndex++
+
+		if opt.HasArg == NoArgument {
+			return GetOptResult{Char: r}, nil
+		}
+
+		// look for an option argument in the next arg
+		if g.OptIndex < len(g.Args) {
+			nextArg := g.Args[g.OptIndex]
+			g.OptIndex++
+			// TODO: check for empty?
+			return GetOptResult{Char: r, OptArg: nextArg}, nil
+		}
+
+		if opt.HasArg == RequiredArgument {
+			return GetOptResult{Char: r}, ErrMissingOptArg
+		}
+
+		return GetOptResult{Char: r}, nil
+	}
+}
+
 func (g *GetOptState) GetOpt(p GetOptParams) (GetOptResult, error) {
 	if g.OptIndex >= len(g.Args) {
+		// we've reached the end of the arg slice, so we're finished parsing.
 		return GetOptResult{}, ErrDone
 	}
 
 	arg := g.Args[g.OptIndex]
 
-	if g.ArgIndex > 0 {
-		// we're partway through parsing an option group
-		r, _ := utf8.DecodeRuneInString(arg[g.ArgIndex:]) // TODO: error handling?
-		if !isLegalOptRune(r) {
-			return GetOptResult{Char: r}, ErrIllegalOpt
-		}
-
-		index := slices.IndexFunc(p.Short, func(s ShortOpt) bool { return r == s.Char })
-		if index < 0 {
-			return GetOptResult{Char: r}, ErrIllegalOpt
-		}
-
-		short := p.Short[index]
-		g.ArgIndex++
-
-		if arg[g.ArgIndex:] != "" {
-			// there are more runes in the arg
-
-			if short.HasArg == RequiredArgument || short.HasArg == OptionalArgument {
-				// the rest of the arg is its argument
-				optArg := arg[g.ArgIndex:]
-				g.ArgIndex = 0
-				g.OptIndex++
-				return GetOptResult{Char: r, OptArg: optArg}, nil
-			}
-
-			return GetOptResult{Char: r}, nil
-		} else {
-			if short.HasArg == NoArgument {
-				g.ArgIndex = 0
-				g.OptIndex++
-				return GetOptResult{Char: r}, nil
-			}
-
-			g.ArgIndex = 0
+	if g.ArgIndex == 0 {
+		// we're attempting to parse a new argument
+		if arg == "--" {
+			// the '--' delimiter indicates that all remaining arguments are parameters
 			g.OptIndex++
+			return GetOptResult{}, ErrDone
+		}
+		if arg == "-" {
+			// TODO: look into the expected behavior of a bare '-' option
+			return GetOptResult{Char: '-'}, ErrIllegalOpt
+		}
+		if strings.HasPrefix(arg, "--") {
+			// TODO: parse a long option
+			return GetOptResult{Char: '-'}, ErrIllegalOpt
+		}
+		if strings.HasPrefix(arg, "-") {
+			// parse a short option
+			g.ArgIndex++
+			return g.ReadOpt(p)
+		}
 
-			if g.OptIndex < len(g.Args) {
-				nextArg := g.Args[g.OptIndex]
-				g.OptIndex++
-				return GetOptResult{Char: r, OptArg: nextArg}, nil
-				// }
-			} else {
-				if short.HasArg == RequiredArgument {
-					return GetOptResult{}, ErrMissingOptArg
-				} else {
-					return GetOptResult{Char: r}, nil
-				}
-			}
+		// this is a parameter, depending on the configuration, we either stop parsing, or permute it in the arg array
+		should_permute := false // TODO: configure this dynamically
+		if should_permute {
+			// TODO: handle permute
+			return GetOptResult{}, nil
+		} else {
+			// this and remaining args are parameters
+			return GetOptResult{}, ErrDone
 		}
 	} else {
-		// we're parsing a new option
-		if arg == "--" {
-			g.OptIndex++
-			return GetOptResult{}, ErrDone
-		}
-
-		if arg == "-" {
-			return GetOptResult{Char: '-'}, ErrIllegalOpt
-		}
-
-		if strings.HasPrefix(arg, "--") {
-			// TODO: we're parsing a long option
-			return GetOptResult{Char: '-'}, ErrIllegalOpt
-		}
-
-		if strings.HasPrefix(arg, "-") {
-			// we're parsing a short option
-			g.ArgIndex = len("-")
-			r, _ := utf8.DecodeRuneInString(arg[g.ArgIndex:]) // TODO: error handling?
-			if !isLegalOptRune(r) {
-				return GetOptResult{Char: r}, ErrIllegalOpt
-			}
-
-			index := slices.IndexFunc(p.Short, func(s ShortOpt) bool { return r == s.Char })
-			if index > -1 {
-				short := p.Short[index]
-				g.ArgIndex++
-
-				if arg[g.ArgIndex:] != "" {
-					// there are more runes in the arg
-
-					if short.HasArg == RequiredArgument || short.HasArg == OptionalArgument {
-						// the rest of the arg is its argument
-						optArg := arg[g.ArgIndex:]
-						g.ArgIndex = 0
-						g.OptIndex++
-						return GetOptResult{Char: r, OptArg: optArg}, nil
-					}
-
-					return GetOptResult{Char: r}, nil
-				} else {
-					if short.HasArg == NoArgument {
-						g.ArgIndex = 0
-						g.OptIndex++
-						return GetOptResult{Char: r}, nil
-					}
-
-					g.ArgIndex = 0
-					g.OptIndex++
-
-					if g.OptIndex < len(g.Args) {
-						nextArg := g.Args[g.OptIndex]
-						g.OptIndex++
-						return GetOptResult{Char: r, OptArg: nextArg}, nil
-						// }
-					} else {
-						if short.HasArg == RequiredArgument {
-							return GetOptResult{}, ErrMissingOptArg
-						} else {
-							return GetOptResult{Char: r}, nil
-						}
-					}
-				}
-			} else {
-				return GetOptResult{Char: r}, ErrIllegalOpt
-			}
-		} else {
-			// this is a positional argument, so we're done parsing
-			return GetOptResult{}, ErrDone
-		}
+		// we're partway through parsing an option group (e.g. '-abc')
+		return g.ReadOpt(p)
 	}
 }
 

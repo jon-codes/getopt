@@ -13,7 +13,7 @@ func TestNew(t *testing.T) {
 
 func TestReset(t *testing.T) {
 	g := NewGetOptState([]string{"my_program", "-a", "-b"})
-	p := GetOptParams{Short: []ShortOpt{{Char: 'a'}, {Char: 'b'}}}
+	p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}}}
 
 	_, _ = g.GetOpt(p)
 	assertState(t, g, GetOptState{Args: []string{"my_program", "-a", "-b"}, OptIndex: 2, ArgIndex: 0})
@@ -25,7 +25,7 @@ func TestReset(t *testing.T) {
 func TestGetOpt_Opts(t *testing.T) {
 	t.Run("a single valid option", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-a"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'a'}, nil},
@@ -36,63 +36,61 @@ func TestGetOpt_Opts(t *testing.T) {
 		assertArgs(t, g, []string{"my_program", "-a"}, 2)
 	})
 
-	t.Run("a single valid option with arguments", func(t *testing.T) {
-		t.Run("when the argument is provided inline", func(t *testing.T) {
-			g := NewGetOptState([]string{"my_program", "-afoo"})
-			p := GetOptParams{Short: []ShortOpt{{Char: 'a', HasArg: RequiredArgument}}}
+	t.Run("a single valid option when the argument is provided inline", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-afoo"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
-			wants := []resultAssertion{
-				{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
-				{GetOptResult{}, ErrDone},
-			}
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
 
-			assertSequence(t, g, p, wants)
-			assertArgs(t, g, []string{"my_program", "-afoo"}, 2)
-		})
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-afoo"}, 2)
+	})
 
-		t.Run("when the argument is provided in the next arg", func(t *testing.T) {
-			g := NewGetOptState([]string{"my_program", "-a", "foo"})
-			p := GetOptParams{Short: []ShortOpt{{Char: 'a', HasArg: RequiredArgument}}}
+	t.Run("a single valid option when the argument is provided in the next arg", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-a", "foo"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
-			wants := []resultAssertion{
-				{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
-				{GetOptResult{}, ErrDone},
-			}
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a', OptArg: "foo"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
 
-			assertSequence(t, g, p, wants)
-			assertArgs(t, g, []string{"my_program", "-a", "foo"}, 3)
-		})
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-a", "foo"}, 3)
+	})
 
-		t.Run("when the next arg looks like an option", func(t *testing.T) {
-			g := NewGetOptState([]string{"my_program", "-a", "-b"})
-			p := GetOptParams{Short: []ShortOpt{{Char: 'a', HasArg: RequiredArgument}}}
+	t.Run("a single valid option when the next arg looks like an option", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-a", "-b"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
-			wants := []resultAssertion{
-				{GetOptResult{Char: 'a', OptArg: "-b"}, nil},
-				{GetOptResult{}, ErrDone},
-			}
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a', OptArg: "-b"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
 
-			assertSequence(t, g, p, wants)
-			assertArgs(t, g, []string{"my_program", "-a", "-b"}, 3)
-		})
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-a", "-b"}, 3)
+	})
 
-		t.Run("when the argument contains multi-byte chars", func(t *testing.T) {
-			g := NewGetOptState([]string{"my_program", "-a文"})
-			p := GetOptParams{Short: []ShortOpt{{Char: 'a', HasArg: RequiredArgument}}}
+	t.Run("a single valid option when the argument contains multi-byte chars", func(t *testing.T) {
+		g := NewGetOptState([]string{"my_program", "-a文"})
+		p := GetOptParams{Opts: []Opt{{Char: 'a', HasArg: RequiredArgument}}}
 
-			wants := []resultAssertion{
-				{GetOptResult{Char: 'a', OptArg: "文"}, nil},
-				{GetOptResult{}, ErrDone},
-			}
+		wants := []resultAssertion{
+			{GetOptResult{Char: 'a', OptArg: "文"}, nil},
+			{GetOptResult{}, ErrDone},
+		}
 
-			assertSequence(t, g, p, wants)
-			assertArgs(t, g, []string{"my_program", "-a文"}, 2)
-		})
+		assertSequence(t, g, p, wants)
+		assertArgs(t, g, []string{"my_program", "-a文"}, 2)
 	})
 
 	t.Run("multiple valid options", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-a", "-b", "-c"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'a'}, nil},
@@ -107,7 +105,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("option groups", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-abc"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}, {Char: 'c'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'a'}, nil},
@@ -122,7 +120,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("a single undefined option", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-b"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'b'}, ErrIllegalOpt},
@@ -134,7 +132,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("a single '-' option", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-"})
-		p := GetOptParams{Short: []ShortOpt{{Char: '-'}}}
+		p := GetOptParams{Opts: []Opt{{Char: '-'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: '-'}, ErrIllegalOpt},
@@ -146,7 +144,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("a single non-graph option", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-文"})
-		p := GetOptParams{Short: []ShortOpt{{Char: '文'}}}
+		p := GetOptParams{Opts: []Opt{{Char: '文'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: '文'}, ErrIllegalOpt},
@@ -158,7 +156,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("-- terminates option parsing", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-a", "--", "-b"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}, {Char: 'b'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'a'}, nil},
@@ -171,7 +169,7 @@ func TestGetOpt_Opts(t *testing.T) {
 
 	t.Run("positionals terminate option parsing", func(t *testing.T) {
 		g := NewGetOptState([]string{"my_program", "-a", "my_arg", "-b"})
-		p := GetOptParams{Short: []ShortOpt{{Char: 'a'}, {Char: 'b'}}}
+		p := GetOptParams{Opts: []Opt{{Char: 'a'}, {Char: 'b'}}}
 
 		wants := []resultAssertion{
 			{GetOptResult{Char: 'a'}, nil},
