@@ -170,6 +170,7 @@ const char* getopt_func_name(GetoptFunc func) {
 static int lopts_count(const char* optstring) {
     char* dupstr = strdup(optstring);
     if (!dupstr) {
+        log_err("\"%s\" while allocating longopts", strerror(errno));
         return -1;
     }
 
@@ -200,6 +201,7 @@ void lopts_destroy(struct option* lopts) {
 static bool parse_lopts(const char* optstring, struct option* lopts) {
     char* dupstr = strdup(optstring);
     if (!dupstr) {
+        log_err("\"%s\" while allocating longopts", strerror(errno));
         return true;  // allocation failed
     }
 
@@ -225,6 +227,7 @@ static bool parse_lopts(const char* optstring, struct option* lopts) {
         lopts[i].val = -2;
 
         if (!lopts[i].name) {
+            log_err("\"%s\" while allocating longopts", strerror(errno));
             for (int j = 0; j < i; j++) {
                 free((char*)lopts[j].name);
             }
@@ -263,6 +266,28 @@ struct option* create_lopts(const char* optstring) {
     return lopts;
 }
 
+static char* trim_name(const char* input) {
+    if (input == NULL) return NULL;
+
+    while (*input == '-') {
+        input++;
+    }
+
+    const char* equals = strchr(input, '=');
+
+    size_t len = equals ? (size_t)(equals - input) : strlen(input);
+    char* result = malloc(len + 1);
+    if (result == NULL) {
+        log_err("\"%s\" while allocating fixture name", strerror(errno));
+        return NULL;
+    }
+
+    strncpy(result, input, len);
+    result[len] = '\0';
+
+    return result;
+}
+
 static bool handle_case(json_t* item, const size_t index, json_t* results_array) {
     Input input = {
         .label = NULL,
@@ -287,8 +312,6 @@ static bool handle_case(json_t* item, const size_t index, json_t* results_array)
             json_object_set_new(result, "func", json_string(getopt_func_name(func)));
             json_object_set_new(result, "mode", json_string(getopt_mode_name(mode)));
             json_object_set(result, "args", args);
-            json_object_set(result, "opts", opts);
-            json_object_set(result, "lopts", lopts);
 
             json_t* iter_array = json_array();
             json_object_set_new(result, "want_results", iter_array);
@@ -304,6 +327,7 @@ static bool handle_case(json_t* item, const size_t index, json_t* results_array)
             json_array_foreach(args, i, arg) {
                 argv[i] = strdup(json_string_value(arg));
                 if (!argv[i]) {
+                    log_err("\"%s\" while allocating longopts", strerror(errno));
                     for (int j = 0; j < i; j++) {
                         free(argv[i]);
                     }
@@ -319,6 +343,46 @@ static bool handle_case(json_t* item, const size_t index, json_t* results_array)
             strcpy(optstring, mode_prefixes[mode]);
             strcat(optstring, json_string_value(opts));
 
+            json_t* opts_array = json_array();
+            i = 0;
+            while (json_string_value(opts)[i] != '\0') {
+                if (json_string_value(opts)[i] != ':') {
+                    char element = json_string_value(opts)[i];
+                    int colon_count = 0;
+
+                    while (json_string_value(opts)[i + 1] == ':') {
+                        colon_count++;
+                        i++;
+                    }
+
+                    const char* has_arg;
+                    switch (colon_count) {
+                        case no_argument:
+                            has_arg = "no_argument";
+                            break;
+                        case required_argument:
+                            has_arg = "required_argument";
+                            break;
+                        case optional_argument:
+                            has_arg = "optional_argument";
+                            break;
+                        default:
+                            log_err("invalid optstring %s", json_string_value(opts));
+                            for (i = 0; i < argc; i++) {
+                                if (argv[i]) {
+                                    free(argv[i]);
+                                }
+                            }
+                            free(argv);
+                            return true;
+                    }
+
+                    json_array_append_new(opts_array, json_pack("{s:i,s:s}", "char", element, "has_arg", has_arg));
+                    i++;
+                }
+            }
+            json_object_set_new(result, "opts", opts_array);
+
             struct option* longoptions = create_lopts(json_string_value(lopts));
             if (!longoptions) {
                 for (i = 0; i < argc; i++) {
@@ -329,6 +393,25 @@ static bool handle_case(json_t* item, const size_t index, json_t* results_array)
                 free(argv);
                 return true;
             }
+
+            json_t* json_lopts_array = json_array();
+            struct option* current_lopt = longoptions;
+            while ((*current_lopt).name != NULL) {
+                const char* has_arg = "no_argument";
+                switch ((*current_lopt).has_arg) {
+                    case required_argument:
+                        has_arg = "required_argument";
+                        break;
+                    case optional_argument:
+                        has_arg = "optional_argument";
+                        break;
+                    default:
+                        break;
+                }
+                json_array_append_new(json_lopts_array, json_pack("{s:s,s:s}", "name", (*current_lopt).name, "has_arg", has_arg));
+                current_lopt++;
+            }
+            json_object_set_new(result, "lopts", json_lopts_array);
 
             optind = 0;
             opterr = 0;
@@ -346,15 +429,82 @@ static bool handle_case(json_t* item, const size_t index, json_t* results_array)
                     opt = getopt_long_only(argc, argv, optstring, longoptions, &longindex);
                 }
 
+                json_t* json_char = json_integer(0);
+                json_t* json_name = json_string("");
+                json_t* json_err = json_string("");
+                switch (opt) {
+                    case ':':
+                        json_string_set(json_err, "missing_opt_arg");
+                        if (optopt > 0) {
+                            json_integer_set(json_char, optopt);
+                        } else if (func != GETOPT_FUNC_GETOPT) {
+                            char* name = trim_name(argv[optind - 1]);
+                            if (name == NULL) {
+                                for (i = 0; i < argc; i++) {
+                                    if (argv[i]) {
+                                        free(argv[i]);
+                                    }
+                                }
+                                free(argv);
+                                lopts_destroy(longoptions);
+                                return true;
+                            }
+                            json_string_set(json_name, name);
+                            free(name);
+                        }
+                        break;
+                    case '?':
+                        json_string_set(json_err, "unknown_opt");
+                        if (optopt > 0) {
+                            json_integer_set(json_char, optopt);
+                        } else {
+                            char* name = trim_name(argv[optind - 1]);
+                            if (name == NULL) {
+                                for (i = 0; i < argc; i++) {
+                                    if (argv[i]) {
+                                        free(argv[i]);
+                                    }
+                                }
+                                free(argv);
+                                lopts_destroy(longoptions);
+                                return true;
+                            }
+                            json_string_set(json_name, name);
+
+                            current_lopt = longoptions;
+                            while ((*current_lopt).name != NULL) {
+                                if (strcmp(name, current_lopt->name) == 0) {
+                                    json_string_set(json_err, "illegal_opt_arg");
+                                    char* inlineOptarg = strchr(argv[optind - 1], '=');
+                                    if (inlineOptarg != NULL && *(inlineOptarg + 1) != '\0') {
+                                        optarg = inlineOptarg + 1;
+                                    }
+                                    break;
+                                }
+                                current_lopt++;
+                            }
+                            free(name);
+                        }
+                        break;
+                    case -1:
+                        json_string_set(json_err, "done");
+                        break;
+                    case -2:
+                        json_string_set(json_name, longoptions[longindex].name);
+                        break;
+                    default:
+                        json_integer_set(json_char, opt);
+                        break;
+                }
+
                 json_array_append_new(
                     iter_array,
                     json_pack(
-                        "{s:i, s:i, s:i, s:s?, s:i}",
-                        "opt", opt,
-                        "optind", optind,
-                        "optopt", optopt,
-                        "optarg", optarg,
-                        "longindex", longindex));
+                        "{s:o,s:o,s:s,s:o}",
+                        "char", json_char,
+                        "name", json_name,
+                        "optarg", optarg ? optarg : "",
+                        "err", json_err));
 
                 longindex = 0;
 
