@@ -69,6 +69,52 @@ func (g *GetOptState) Reset(args []string) {
 	g.ArgIndex = 0
 }
 
+func (g *GetOptState) ReadLongOpt(p GetOptParams) (GetOptResult, error) {
+	arg := g.Args[g.OptIndex]
+	g.OptIndex++
+
+	subArg := arg[2:]
+	name, inline, foundInline := strings.Cut(subArg, "=") // Maybe incorrect, what should the behavior be for 'name='?
+
+	for _, r := range name {
+		if !isLegalOptRune(r) {
+			return GetOptResult{Name: name}, ErrIllegalOpt
+		}
+	}
+
+	i := slices.IndexFunc(p.LongOpts, func(lo LongOpt) bool { return name == lo.Name })
+	if i < 0 {
+		return GetOptResult{Name: name}, ErrIllegalOpt
+	}
+	long := p.LongOpts[i]
+
+	if foundInline {
+		if long.HasArg == RequiredArgument || long.HasArg == OptionalArgument {
+			return GetOptResult{Name: name, OptArg: inline}, nil
+		}
+
+		return GetOptResult{Name: subArg}, ErrIllegalOpt // report the name w/ the inline argument if illegal?
+	}
+
+	if long.HasArg == NoArgument {
+		return GetOptResult{Name: name}, nil
+	}
+
+	// look for an option argument in the next arg
+	if g.OptIndex < len(g.Args) {
+		nextArg := g.Args[g.OptIndex]
+		g.OptIndex++
+		// TODO: check for empty?
+		return GetOptResult{Name: name, OptArg: nextArg}, nil
+	}
+
+	if long.HasArg == RequiredArgument {
+		return GetOptResult{Name: name}, ErrMissingOptArg
+	}
+
+	return GetOptResult{Name: name}, nil
+}
+
 func (g *GetOptState) ReadOpt(p GetOptParams) (GetOptResult, error) {
 	arg := g.Args[g.OptIndex]
 	subArg := arg[g.ArgIndex:]
@@ -142,8 +188,7 @@ func (g *GetOptState) GetOpt(p GetOptParams) (GetOptResult, error) {
 			return GetOptResult{Char: '-'}, ErrIllegalOpt
 		}
 		if strings.HasPrefix(arg, "--") {
-			// TODO: parse a long option
-			return GetOptResult{Char: '-'}, ErrIllegalOpt
+			return g.ReadLongOpt(p)
 		}
 		if strings.HasPrefix(arg, "-") {
 			// parse a short option
