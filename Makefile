@@ -70,7 +70,7 @@ cover: $(TMPDIR)
 	go tool cover -html=$(TMPDIR)/cover.out
 
 .PHONY: cover-check
-cover-check:
+cover-check: $(TMPDIR)
 	go test -race -count=1 -v -coverprofile $(TMPDIR)/cover.out $(GOPKG)
 
 ## clean: clean output
