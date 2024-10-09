@@ -24,3 +24,7 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - run: make check
+      - uses: codecov/codecov-action@v4
+        with:
+          files: tmp/cover.out
+          token: ${{ secrets.CODECOV_TOKEN }}
