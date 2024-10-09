@@ -28,7 +28,7 @@ TESTGEN_OUTPUT := $(TESTGEN_DATADIR)/fixtures.json
 all: deps fmt vet test
 
 .PHONY: check
-check: deps-check fmt-check vet test-check
+check: deps-check fmt-check vet cover-check
 
 ## deps: clean deps
 .PHONY: deps
@@ -61,13 +61,17 @@ test:
 
 .PHONY: test-check
 test-check:
-	go test -count=1 -v ./...
+	go test -race -count=1 -v ./...
 
 ## cover: go test coverage
 .PHONY: cover
 cover: $(TMPDIR)
 	go test -v -coverprofile $(TMPDIR)/cover.out $(GOPKG)
 	go tool cover -html=$(TMPDIR)/cover.out
+
+.PHONY: cover-check
+cover-check:
+	go test -race -count=1 -v -coverprofile $(TMPDIR)/cover.out $(GOPKG)
 
 ## clean: clean output
 .PHONY: clean
