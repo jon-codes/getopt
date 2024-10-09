@@ -48,8 +48,8 @@ for opt, err := range state.All(config) {
 ```
 # Behavior
 
-This package uses [GNU libc] as a reference for behavior, since many expect the
-non-standard features it provides.
+This package uses [GNU libc](https://www.gnu.org/software/libc/) as a reference for behavior, since many expect the
+non-standard features it provides. This is accomplished via a C test generator that runs getopt for all functions and parsing modes.
 
 It supports the same configuration options as the GNU options via [Mode](https://pkg.go.dev/github.com/jon-codes/getopt#Mode):
   - [ModeGNU](https://pkg.go.dev/github.com/jon-codes/getopt#ModeGNU): enables default behavior.
