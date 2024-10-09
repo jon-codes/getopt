@@ -1,4 +1,7 @@
 # getopt
+[![Go Reference](https://pkg.go.dev/badge/github.com/jon-codes/getopt.svg)](https://pkg.go.dev/github.com/jon-codes/getopt)
+[![codecov](https://codecov.io/github/jon-codes/getopt/graph/badge.svg?token=CF7WDJOFVY)](https://codecov.io/github/jon-codes/getopt)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jon-codes/getopt)](https://goreportcard.com/report/github.com/jon-codes/getopt)
 
 Package `getopt` provides a zero-dependency Go implementation of the Unix getopt function for parsing command-line options.
 
