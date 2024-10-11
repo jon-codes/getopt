@@ -62,7 +62,7 @@ func modeString(m Mode) string {
 	switch m {
 	case ModeGNU:
 		return "gnu"
-	case ModePosix:
+	case ModePOSIX:
 		return "posix"
 	case ModeInOrder:
 		return "inorder"
@@ -167,7 +167,7 @@ func (f *fixture) UnmarshalJSON(data []byte) error {
 	case "gnu":
 		f.Mode = ModeGNU
 	case "posix":
-		f.Mode = ModePosix
+		f.Mode = ModePOSIX
 	case "inorder":
 		f.Mode = ModeInOrder
 	}

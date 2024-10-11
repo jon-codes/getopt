@@ -10,7 +10,7 @@ import (
 var (
 	genHasArg = rapid.SampledFrom([]getopt.HasArg{getopt.NoArgument, getopt.RequiredArgument, getopt.OptionalArgument})
 	funcGen   = rapid.SampledFrom([]getopt.Func{getopt.FuncGetOpt, getopt.FuncGetOptLong, getopt.FuncGetOptLongOnly})
-	modeGen   = rapid.SampledFrom([]getopt.Mode{getopt.ModeGNU, getopt.ModePosix, getopt.ModeInOrder})
+	modeGen   = rapid.SampledFrom([]getopt.Mode{getopt.ModeGNU, getopt.ModePOSIX, getopt.ModeInOrder})
 )
 
 var optGen = rapid.Custom(func(t *rapid.T) getopt.Opt {

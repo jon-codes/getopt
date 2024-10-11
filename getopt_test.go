@@ -267,7 +267,7 @@ func TestGetOpt_FuncGetOpt(t *testing.T) {
 		c := Config{
 			Opts: OptStr(`ab:c::`),
 			Func: function,
-			Mode: ModePosix,
+			Mode: ModePOSIX,
 		}
 		wants := []assertion{
 			{char: 'a', args: argsStr(`prgm -a p1 p2 -b arg1 p3 p4 -c -- p5`), optInd: 2},
@@ -411,7 +411,7 @@ func TestGetOpt_FuncGetOptLong(t *testing.T) {
 		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
-			Mode:     ModePosix,
+			Mode:     ModePOSIX,
 		}
 		wants := []assertion{
 			{name: "longa", args: argsStr(`prgm --longa p1 p2 --longb arg1 p3 p4 --longc -- p5`), optInd: 2},
@@ -572,7 +572,7 @@ func TestGetOpt_FuncGetOptLongOnly(t *testing.T) {
 		c := Config{
 			LongOpts: LongOptStr(`longa,longb:,longc::`),
 			Func:     function,
-			Mode:     ModePosix,
+			Mode:     ModePOSIX,
 		}
 		wants := []assertion{
 			{name: "longa", args: argsStr(`prgm -longa p1 p2 -longb arg1 p3 p4 -longc -- p5`), optInd: 2},

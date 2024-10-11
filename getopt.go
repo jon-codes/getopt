@@ -46,7 +46,7 @@ type Mode int
 
 const (
 	ModeGNU     Mode = iota // enable GNU extension behavior
-	ModePosix               // enable POSIX behavior (terminate on first parameter)
+	ModePOSIX               // enable POSIX behavior (terminate on first parameter)
 	ModeInOrder             // enable "in-order" behavior (parse parameters as options)
 )
 
@@ -245,7 +245,7 @@ func (s *State) GetOpt(c Config) (res Result, err error) {
 	pStart := s.optInd
 	if s.args[s.optInd] == "" || s.args[s.optInd] == "-" || []rune(s.args[s.optInd])[0] != '-' {
 		switch c.Mode {
-		case ModePosix:
+		case ModePOSIX:
 			return res, ErrDone
 		case ModeInOrder:
 			s.optInd++
