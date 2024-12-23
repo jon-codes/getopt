@@ -3,6 +3,7 @@
 [![CI](https://github.com/jon-codes/getopt/actions/workflows/ci.yml/badge.svg)](https://github.com/jon-codes/getopt/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jon-codes/getopt)](https://goreportcard.com/report/github.com/jon-codes/getopt)
 [![codecov](https://codecov.io/github/jon-codes/getopt/graph/badge.svg?token=CF7WDJOFVY)](https://codecov.io/github/jon-codes/getopt)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
 Package `getopt` provides a zero-dependency Go implementation of the Unix getopt function for parsing command-line options.
 
