@@ -21,5 +21,8 @@
     { "label": "long_only_with_short", "args": ["prgm", "-a", "-alonga", "-ba1", "-blongb=a2", "-c", "-clongc"], "opts": "ab:c::", "lopts": "alonga,blongb:,clongc::"},
     { "label": "long_only_with_short_abbr", "args": ["prgm", "-a", "-al", "-ba1", "-bl=a2", "-c", "-cl"], "opts": "ab:c::l", "lopts": "alonga,blongb:,clongc::"},
     { "label": "permute_and_terminate", "args": ["prgm", "p1", "-a", "p2", "p3", "-ba1", "-c", "p4", "--longa", "p5", "p6", "p7", "--longb", "a2", "--", "--longc"], "opts": "ab:c::", "lopts": "longa,longb:,longc::"},
-    { "label": "kitchen_sink", "args": ["prgm", "p1", "-a", "-longa", "p2", "p3", "-ba1", "p4", "--longb=a2", "-ca3", "--longc", "--", "-a"], "opts": "ab:c::", "lopts": "longa,longb:,longc::"}
+    { "label": "kitchen_sink", "args": ["prgm", "p1", "-a", "-longa", "p2", "p3", "-ba1", "p4", "--longb=a2", "-ca3", "--longc", "--", "-a"], "opts": "ab:c::", "lopts": "longa,longb:,longc::"},
+    { "label": "ambiguous_req_arg", "args": ["prgm", "--long-a=a", "--long-ab=b", "--long=c"], "opts": "", "lopts": "long-a:,long-ab:"},
+    { "label": "ambiguous_opt_arg", "args": ["prgm", "--long-a=a", "--long-ab=b", "--long=c"], "opts": "", "lopts": "long-a::,long-ab::"},
+    { "label": "ambiguous_no_arg", "args": ["prgm", "--long-a", "--long-ab", "--long"], "opts": "", "lopts": "long-a,long-ab"}
 ]

@@ -16690,5 +16690,2624 @@
             "--",
             "-a"
         ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long_only",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long_only",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_req_arg",
+        "func": "getopt_long_only",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "required_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "required_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 61,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 99,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "c",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long_only",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long_only",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_opt_arg",
+        "func": "getopt_long_only",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "a",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "b",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "optional_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "optional_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a=a",
+            "--long-ab=b",
+            "--long=c"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 97,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 98,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 45,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 108,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 111,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 110,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 103,
+                "name": "",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long_only",
+        "mode": "gnu",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long_only",
+        "mode": "posix",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
+    },
+    {
+        "label": "ambiguous_no_arg",
+        "func": "getopt_long_only",
+        "mode": "inorder",
+        "args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ],
+        "want_results": [
+            {
+                "char": 0,
+                "name": "long-a",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long-ab",
+                "optarg": "",
+                "err": ""
+            },
+            {
+                "char": 0,
+                "name": "long",
+                "optarg": "",
+                "err": "unknown_opt"
+            },
+            {
+                "char": 0,
+                "name": "",
+                "optarg": "",
+                "err": "done"
+            }
+        ],
+        "opts": [],
+        "lopts": [
+            {
+                "name": "long-a",
+                "has_arg": "no_argument"
+            },
+            {
+                "name": "long-ab",
+                "has_arg": "no_argument"
+            }
+        ],
+        "want_optind": 4,
+        "want_args": [
+            "prgm",
+            "--long-a",
+            "--long-ab",
+            "--long"
+        ]
     }
 ]
