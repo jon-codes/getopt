@@ -389,12 +389,19 @@ func findLongOpt(name string, overrideOpt bool, c Config) (longOpt LongOpt, foun
 	matched := []LongOpt{}
 
 	for _, lo := range c.LongOpts {
+		if lo.Name == name {
+			return lo, true
+		}
 		if strings.HasPrefix(lo.Name, name) {
 			matched = append(matched, lo)
 		}
 	}
 
 	if len(matched) == 1 {
+		return matched[0], true
+	}
+
+	if len(matched) > 0 && c.Func != FuncGetOptLongOnly {
 		return matched[0], true
 	}
 
