@@ -75,7 +75,7 @@ The parser differs from GNU libc's getopt in the following ways:
 
 ## API Documentation
 
-The full API documentation can be found at [pkg.go.dev](https://pkg.go.dev/github.com/jon-codes/getopt).
+The full API documentation can be found at [pkg.go.dev](https://pkg.go.dev/github.com/jon-codes/getopt). The API for major version `1.x.x` is stable -- any breaking changes to the API will require a new major version.
 
 ## Acknowledgements
 
